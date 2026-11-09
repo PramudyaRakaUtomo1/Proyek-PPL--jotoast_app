@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - Jotoast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#f4f3f0] font-sans flex flex-col min-h-screen relative pb-28">
+
+    <!-- Header Landscape (Penuh) -->
+    <header class="bg-[#1a1714] px-10 py-6 flex justify-between items-center w-full">
+        <div>
+            <h1 class="text-[#f5b841] text-3xl font-bold tracking-tight">Jotoast</h1>
+            <p class="text-gray-300 text-sm mt-1">Pesan ricebowl, tost, dan kopi</p>
+        </div>
+        <!-- INI TOMBOL UNTUK NYAMBUNGIN KE HALAMAN LOGIN -->
+        <a href="/login" class="px-5 py-2.5 bg-gray-800 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg border border-gray-600 transition shadow-sm">
+            Login Pegawai
+        </a>
+    </header>
+
+    <!-- Konten Utama (Landscape / Desktop-friendly) -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-10 py-8">
+        
+        <!-- Filter Kategori -->
+        <div class="flex gap-3 mb-8">
+            <a href="/?kategori=semua" class="px-6 py-2.5 rounded-lg bg-[#f5b841] text-gray-900 font-bold shadow-sm">Semua</a>
+            <a href="/?kategori=Ricebowl" class="px-6 py-2.5 rounded-lg bg-white text-gray-700 font-semibold shadow-sm hover:bg-gray-50 transition">Ricebowl</a>
+            <a href="/?kategori=Tost" class="px-6 py-2.5 rounded-lg bg-white text-gray-700 font-semibold shadow-sm hover:bg-gray-50 transition">Tost</a>
+            <a href="/?kategori=Kopi" class="px-6 py-2.5 rounded-lg bg-white text-gray-700 font-semibold shadow-sm hover:bg-gray-50 transition">Kopi</a>
+        </div>
+
+        <!-- Produk tersedia dan habis  -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for item in produk %}
+                {% if item.status_ready %}
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-transparent hover:border-[#f5b841] transition flex flex-col justify-between">
+                    <div>
+                        <div class="w-full h-40 rounded-xl mb-4 overflow-hidden bg-[#efede8]">
+
+                            {% if item.nama == 'Ricebowl Ayam Geprek' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt49-WPr4cfaQ0wmF79f9XeFZ3LsQZF8N_To74ZqDimA&s=10"
+                                    alt="Ricebowl Ayam Geprek"
+                                    class="w-full h-full object-cover">
+
+                            {% elif item.nama == 'Ricebowl Sapi Lada Hitam' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBpZVZp8kvcr0-mE5GjMRn6t7iSCRBNMmBSWuGkxUAvg&s=10"
+                                    alt="Ricebowl Sapi Lada Hitam"    
+                                    class="w-full h-full object-cover">
+                            
+                            {% elif item.nama == 'Ricebowl Sambal Matah' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSl3kU52Ipt-pszy3YqSM3JV8Fy-ztfOZczvpR-9QuemA&s=10"
+                                    alt="Ricebowl Sambal Mata"
+                                    class="w-full h-full object-cover">
+
+                            {% elif item.nama == 'Tost Coklat Keju' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrakDfR2Hphw55iVvLJbshl1TEO4dy_gMV19xoYeleCyoIAoXTqSbimhk&s=10"
+                                    alt="Tost Coklat Keju"
+                                    class="w-full h-full object-cover">
+
+                            {% elif item.nama == 'Tost Telur Smoked Beef' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwiekxxzXk4JAKU4PC9XDjV1KfJlWi9S_SLX2rc3TYtQ&s=10"
+                                    alt="Tost Telur Smoked Beef"
+                                    class="w-full h-full object-cover">
+
+                            {% elif item.nama == 'Tost Selai Kacang' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5Cnq299qkQCYeX7zfsdOvFpD-e0JyPir95D2S-f1HLQ&s=10"
+                                    alt="Tost Selai Kacang"
+                                    class="w-full h-full object-cover">
+
+                            {% elif item.nama == 'Kopi Susu Gula Aren' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwZGr8NNibHhVGX5qFF-jV4hmACCOgBE4SEKZSLK0fqA&s=10"
+                                    alt="Kopi Susu Gula Aren"
+                                    class="w-full h-full object-cover">
+                            
+                            {% elif item.nama == 'Kopi Americano' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsqI90JZHYgc6TLGtybNB5Z5cwcBqiqZ2hdB6oMKC3KQ&s=10"
+                                    alt="Kopi Americano"
+                                    class="w-full h-full object-cover">
+
+                            {% elif item.nama == 'Es Matcha Latte' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPonM0hn0Sp4B91LmYcjj5zKkVftTp5HmU8UpwKm-zWg&s=10"
+                                    alt="Es Matcha Latte"
+                                    class="w-full h-full object-cover">
+
+                            {% elif item.nama == 'Ricebowl chicken with egg' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3pYcbJ96o0qUdu0xNVobB5viBgFKCd8C2NwWur1hWsQ&s=10"
+                                    alt="Ricebowl chicken with egg"
+                                    class="w-full h-full object-cover">
+
+                            {% else %}
+                                <div class="w-full h-full bg-[#efede8]"></div>
+                            {% endif %}
+
+                        </div> 
+                        <h3 class="font-bold text-gray-900 text-lg">{{ item.nama }}</h3>
+                        <p class="text-gray-500 text-sm mt-1">Rp {{ item.harga }}</p>
+                        <p class="text-green-600 text-sm font-semibold mt-2">
+                            Stok tersedia: {{ item.stok }} porsi
+                        </p>
+                    </div>
+                    <form action="{{ url_for('tambah_keranjang', produk_id=item.id) }}"
+                        method="POST"
+                        class="mt-5">
+
+                        <button type="submit"
+                                class="block text-center bg-[#1a1714] text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-black transition shadow-md w-full">
+                            + Tambah ke Keranjang
+                        </button>
+
+                    </form>
+                </div>
+                {% else %}
+                <div class="bg-white p-5 rounded-2xl shadow-sm opacity-60 grayscale-[30%] flex flex-col justify-between border border-transparent">
+                    <div>
+                        <div class="w-full h-40 rounded-xl mb-4 overflow-hidden bg-[#efede8]">
+
+                            {% if item.nama == 'Ricebowl Ayam Geprek' %}
+                                <img
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt49-WPr4cfaQ0wmF79f9XeFZ3LsQZF8N_To74ZqDimA&s=10"
+                                    alt="Ricebowl Ayam Geprek"
+                                    class="w-full h-full object-cover">
+
+                            {% elif item.nama == 'Ricebowl Sapi Lada Hitam' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBpZVZp8kvcr0-mE5GjMRn6t7iSCRBNMmBSWuGkxUAvg&s=10"
+                                    alt="Ricebowl Sapi Lada Hitam"
+                                    class="w-full h-full object-cover">
+                            
+                            {% elif item.nama == 'Ricebowl Sambal Matah' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSl3kU52Ipt-pszy3YqSM3JV8Fy-ztfOZczvpR-9QuemA&s=10"
+                                    alt="Ricebowl Sambal Mata"
+                                    class="w-full h-full object-cover">
+
+                            {% elif item.nama == 'Toast Coklat Keju' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrakDfR2Hphw55iVvLJbshl1TEO4dy_gMV19xoYeleCyoIAoXTqSbimhk&s=10"
+                                    alt="Tost Coklat Keju"
+                                    class="w-full h-full object-cover">
+                            
+                            {% elif item.nama == 'Tost Telur Smoked Beef' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwiekxxzXk4JAKU4PC9XDjV1KfJlWi9S_SLX2rc3TYtQ&s=10"
+                                    alt="Tost Telur Smoked Beef"
+                                    class="w-full h-full object-cover">
+
+                            {% elif item.nama == 'Tost Selai Kacang' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5Cnq299qkQCYeX7zfsdOvFpD-e0JyPir95D2S-f1HLQ&s=10"
+                                    alt="Tost Selai Kacang"
+                                    class="w-full h-full object-cover">
+                            
+                            {% elif item.nama == 'Kopi Susu Gula Aren' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwZGr8NNibHhVGX5qFF-jV4hmACCOgBE4SEKZSLK0fqA&s=10"
+                                    alt="Kopi Susu Gula Aren"
+                                    class="w-full h-full object-cover">
+                            
+                            {% elif item.nama == 'Kopi Americano' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsqI90JZHYgc6TLGtybNB5Z5cwcBqiqZ2hdB6oMKC3KQ&s=10"
+                                    alt="Kopi Americano"
+                                    class="w-full h-full object-cover">
+                            
+                            {% elif item.nama == 'Es Matcha Latte' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPonM0hn0Sp4B91LmYcjj5zKkVftTp5HmU8UpwKm-zWg&s=10"
+                                    alt="Es Matcha Latte"
+                                    class="w-full h-full object-cover">
+                            
+                            {% elif item.nama == 'Ricebowl chicken with egg' %}
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3pYcbJ96o0qUdu0xNVobB5viBgFKCd8C2NwWur1hWsQ&s=10"
+                                    alt="Ricebowl chicken with egg"
+                                    class="w-full h-full object-cover">
+
+                            {% else %}
+                                <div class="w-full h-full bg-[#efede8]"></div>
+                            {% endif %}
+
+                        </div>
+
+                        <h3 class="font-bold text-gray-900 text-lg">{{ item.nama }}</h3>
+                        <p class="text-gray-500 text-sm mt-1">Rp {{ item.harga }}</p>
+                        <p class="text-red-600 text-sm font-semibold mt-2">
+                            Stok tersedia: 0 porsi
+                        </p>
+                    </div>
+
+                    <div class="mt-5 text-center bg-gray-200 text-[#c62828] px-5 py-2.5 rounded-xl text-sm font-bold w-full cursor-not-allowed">
+                        Habis
+                    </div>
+                </div>
+                {% endif %}
+            {% else %}
+                <p class="text-gray-500 col-span-full">Menu belum tersedia.</p>
+            {% endfor %}
+        </div>
+    </main>
+
+    <!-- Floating Bar Checkout di Bawah (Penuh seukuran layar) -->
+    <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-5 shadow-lg z-20">
+
+        <div class="max-w-7xl mx-auto flex justify-between items-center px-10">
+
+            <div class="text-gray-700">
+                <span class="text-sm font-medium">
+                    Keranjang Belanja
+                </span>
+
+                <p class="font-bold text-gray-900 text-xl mt-0.5">
+                    {{ jumlah_keranjang }} produk dipilih
+                </p>
+            </div>
+
+            <a href="{{ url_for('checkout') }}"
+            class="bg-[#f5b841] text-gray-900 px-10 py-3.5 rounded-xl font-bold shadow-md hover:bg-yellow-500 transition text-lg">
+
+                Lihat Keranjang
+            </a>
+
+        </div>
+    </div>
+
+</body>
+</html>

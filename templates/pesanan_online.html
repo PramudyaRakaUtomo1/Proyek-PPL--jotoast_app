@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="10">
+    <title>Pesanan Online - Jotoast</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 25px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .back {
+            background: #555;
+            color: white;
+            padding: 10px 16px;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+
+        .pesanan {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 7px #ddd;
+        }
+
+        .pesanan-header {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 12px;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .menunggu {
+            background: #fff0c2;
+            color: #8a5a00;
+        }
+
+        .diproses {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .selesai {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 9px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .aksi {
+            margin-top: 18px;
+        }
+
+        button {
+            border: none;
+            padding: 11px 18px;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .terima {
+            background: #2563eb;
+        }
+
+        .selesaikan {
+            background: #16a34a;
+        }
+
+        .pesan {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            background: #e0f2fe;
+        }
+
+        .kosong {
+            background: white;
+            padding: 35px;
+            text-align: center;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="header">
+        <div>
+            <h1>Pesanan Online</h1>
+            <p>Daftar pesanan pelanggan dari website Jotoast</p>
+        </div>
+
+        <a href="{{ url_for('kasir') }}" class="back">
+            Kembali ke Kasir
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="pesan">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    {% if daftar_pesanan %}
+
+        {% for data in daftar_pesanan %}
+            {% set trx = data.transaksi %}
+
+            <div class="pesanan">
+
+                <div class="pesanan-header">
+                    <div>
+                        <h3>Pesanan #{{ trx.id }}</h3>
+                        <p>
+                            Pelanggan:
+                            {{ trx.nama_pemesan or 'Pelanggan Online' }}
+                        </p>
+                        <p>Metode pembayaran: {{ trx.metode_bayar }}</p>
+                    </div>
+
+                    <div>
+                        <span class="status {{ trx.status|lower }}">
+                            {{ trx.status }}
+                        </span>
+                    </div>
+                </div>
+
+                <h4>Daftar makanan:</h4>
+
+                {% for item in data.detail %}
+                    <div class="item">
+                        <span>
+                            {{ item.nama_produk }}
+                            × {{ item.jumlah }}
+                        </span>
+
+                        <span>
+                            Rp{{ "{:,.0f}".format(item.subtotal) }}
+                        </span>
+                    </div>
+                {% endfor %}
+
+                <div class="total">
+                    <span>Total</span>
+                    <span>
+                        Rp{{ "{:,.0f}".format(trx.total_harga) }}
+                    </span>
+                </div>
+
+                <div class="aksi">
+
+                    {% if trx.status == 'Menunggu' %}
+                        <form method="POST"
+                              action="{{ url_for(
+                                  'ubah_status_pesanan',
+                                  id=trx.id,
+                                  aksi='terima'
+                              ) }}">
+                            <button class="terima" type="submit">
+                                Terima Pesanan
+                            </button>
+                        </form>
+
+                    {% elif trx.status == 'Diproses' %}
+                        <form method="POST"
+                              action="{{ url_for(
+                                  'ubah_status_pesanan',
+                                  id=trx.id,
+                                  aksi='selesai'
+                              ) }}">
+                            <button class="selesaikan" type="submit">
+                                Selesaikan Pesanan
+                            </button>
+                        </form>
+
+                    {% else %}
+                        <strong>Pesanan sudah selesai.</strong>
+                    {% endif %}
+
+                </div>
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="kosong">
+            <h3>Belum ada pesanan online</h3>
+            <p>Pesanan pelanggan akan muncul di halaman ini setelah checkout.</p>
+        </div>
+
+    {% endif %}
+
+</div>
+</body>
+</html>

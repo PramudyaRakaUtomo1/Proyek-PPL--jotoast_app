@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Jotoast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans flex justify-center">
+    <div class="w-full max-w-md bg-[#F4F3F0] min-h-screen relative shadow-xl">
+
+        <!-- Header dengan Tombol Kembali -->
+        <div class="bg-[#1a1714] px-6 py-6 flex items-center gap-4">
+            <a href="/" class="text-white bg-gray-700 px-4 py-2 rounded-lg hover:bg-gray-600 transition font-bold text-sm">
+                &larr; Tambah Menu
+            </a>
+            <h1 class="text-white text-2xl font-bold tracking-tight">Keranjang</h1>
+        </div>
+
+        <div class="p-6 space-y-6">
+
+            <!-- Pesan error -->
+            {% with pesan = get_flashed_messages(with_categories=true) %}
+                {% for kategori_pesan, isi in pesan %}
+                    <div class="px-4 py-3 rounded-xl text-sm font-semibold
+                        {% if kategori_pesan == 'sukses' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-700{% endif %}">
+                        {{ isi }}
+                    </div>
+                {% endfor %}
+            {% endwith %}
+
+            {% if items %}
+                <!-- Daftar item di keranjang -->
+                <div class="bg-white rounded-xl shadow-sm divide-y divide-gray-100">
+                    {% for item in items %}
+                    <div class="p-4">
+                        <div class="flex justify-between items-start gap-3">
+                            <div>
+                                <p class="font-bold text-gray-900">{{ item.produk.nama }}</p>
+                                <p class="text-sm text-gray-500">{{ item.produk.harga|rupiah }} / porsi</p>
+                            </div>
+                            <form action="/keranjang/hapus/{{ item.produk.id }}" method="POST">
+                                <button type="submit" class="text-xs text-red-600 font-semibold hover:underline">Hapus</button>
+                            </form>
+                        </div>
+
+                        <div class="flex justify-between items-center mt-3">
+                            <div class="flex items-center gap-3">
+                                <form action="/keranjang/kurang/{{ item.produk.id }}" method="POST">
+                                    <button type="submit" class="w-8 h-8 rounded-lg bg-[#f4f3f0] border border-gray-300 font-bold hover:bg-gray-200">&minus;</button>
+                                </form>
+                                <span class="font-bold w-5 text-center">{{ item.jumlah }}</span>
+                                <form action="/keranjang/tambah/{{ item.produk.id }}" method="POST">
+                                    <button type="submit" class="w-8 h-8 rounded-lg bg-[#f4f3f0] border border-gray-300 font-bold hover:bg-gray-200">+</button>
+                                </form>
+                            </div>
+                            <p class="font-bold text-gray-900">{{ item.subtotal|rupiah }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="p-4 flex justify-between items-center bg-gray-50 rounded-b-xl">
+                        <span class="font-semibold text-gray-700">Total</span>
+                        <span class="text-xl font-extrabold text-gray-900">{{ total|rupiah }}</span>
+                    </div>
+                </div>
+
+                <!-- Form Checkout -->
+                <form action="/checkout" method="POST" class="space-y-5">
+                    <div>
+                        <label class="block text-gray-800 font-semibold mb-2">Nama Pemesan</label>
+                        <input type="text" name="nama_pemesan" required placeholder="Misal: Budi" class="w-full p-4 border border-gray-300 rounded-xl focus:border-[#f5b841]">
+                    </div>
+                    <div>
+                        <label class="block text-gray-800 font-semibold mb-2">Metode Pembayaran</label>
+                        <select name="metode_bayar" class="w-full p-4 border border-gray-300 rounded-xl focus:border-[#f5b841]">
+                            <option value="Tunai di Kasir">Bayar di Kasir</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full mt-4 bg-[#f5b841] text-gray-900 px-6 py-4 rounded-xl font-bold shadow-lg hover:bg-yellow-500 transition text-lg">Buat Pesanan</button>
+                </form>
+            {% else %}
+                <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+                    <p class="text-gray-700 font-semibold">Keranjang kamu masih kosong.</p>
+                    <a href="/" class="inline-block mt-4 bg-[#1a1714] text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition">Lihat Menu</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
