@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - Jotoast</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
 </head>
-<body class="bg-gray-100 font-sans flex justify-center">
-    <div class="w-full max-w-md bg-[#F4F3F0] min-h-screen relative shadow-xl">
+<body class="checkout-page font-sans flex justify-center min-h-screen">
+    <div class="checkout-shell w-full max-w-md min-h-screen relative shadow-xl">
 
         <!-- Header dengan Tombol Kembali -->
-        <div class="bg-[#1a1714] px-6 py-6 flex items-center gap-4">
+        <div class="checkout-header px-6 py-6 flex items-center gap-4">
             <a href="/" class="text-white bg-gray-700 px-4 py-2 rounded-lg hover:bg-gray-600 transition font-bold text-sm">
                 &larr; Tambah Menu
             </a>
@@ -31,7 +32,7 @@
 
             {% if items %}
                 <!-- Daftar item di keranjang -->
-                <div class="bg-white rounded-xl shadow-sm divide-y divide-gray-100">
+                <div class="checkout-card bg-white rounded-2xl shadow-sm divide-y divide-gray-100">
                     {% for item in items %}
                     <div class="p-4">
                         <div class="flex justify-between items-start gap-3">
@@ -66,7 +67,7 @@
                 </div>
 
                 <!-- Form Checkout -->
-                <form action="/checkout" method="POST" class="space-y-5">
+                <form action="/checkout" method="POST" class="checkout-card p-5 sm:p-6 rounded-2xl space-y-5">
                     <div>
                         <label class="block text-gray-800 font-semibold mb-2">Nama Pemesan</label>
                         <input type="text" name="nama_pemesan" required placeholder="Misal: Budi" class="w-full p-4 border border-gray-300 rounded-xl focus:border-[#f5b841]">
@@ -77,10 +78,10 @@
                             <option value="Tunai di Kasir">Bayar di Kasir</option>
                         </select>
                     </div>
-                    <button type="submit" class="w-full mt-4 bg-[#f5b841] text-gray-900 px-6 py-4 rounded-xl font-bold shadow-lg hover:bg-yellow-500 transition text-lg">Buat Pesanan</button>
+                    <button type="submit" class="checkout-submit w-full mt-4 text-gray-900 px-6 py-4 rounded-xl font-bold shadow-lg transition text-lg">Buat Pesanan</button>
                 </form>
             {% else %}
-                <div class="bg-white rounded-xl shadow-sm p-8 text-center">
+                <div class="checkout-card bg-white rounded-2xl shadow-sm p-8 text-center">
                     <p class="text-gray-700 font-semibold">Keranjang kamu masih kosong.</p>
                     <a href="/" class="inline-block mt-4 bg-[#1a1714] text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition">Lihat Menu</a>
                 </div>

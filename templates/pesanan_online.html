@@ -134,14 +134,15 @@
             border-radius: 10px;
         }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
 </head>
 
-<body>
+<body class="orders-page">
 <div class="container">
 
     <div class="header">
         <div>
-            <h1>Pesanan Online</h1>
+            <h1 class="orders-title">Pesanan Online</h1>
             <p>Daftar pesanan pelanggan dari website Jotoast</p>
         </div>
 
@@ -152,7 +153,9 @@
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
+            {% if category in ['kasir_success', 'kasir_error'] %}
             <div class="pesan">{{ message }}</div>
+            {% endif %}
         {% endfor %}
     {% endwith %}
 
@@ -161,7 +164,7 @@
         {% for data in daftar_pesanan %}
             {% set trx = data.transaksi %}
 
-            <div class="pesanan">
+            <div class="pesanan orders-card">
 
                 <div class="pesanan-header">
                     <div>

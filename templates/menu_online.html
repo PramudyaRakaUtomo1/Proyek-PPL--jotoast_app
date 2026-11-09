@@ -5,41 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu - Jotoast</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
 </head>
-<body class="bg-[#f4f3f0] font-sans flex flex-col min-h-screen relative pb-28">
+<body class="menu-page flex flex-col min-h-screen relative pb-28">
 
     <!-- Header Landscape (Penuh) -->
-    <header class="bg-[#1a1714] px-10 py-6 flex justify-between items-center w-full">
+    <header class="menu-header flex justify-between items-center w-full">
         <div>
             <h1 class="text-[#f5b841] text-3xl font-bold tracking-tight">Jotoast</h1>
             <p class="text-gray-300 text-sm mt-1">Pesan ricebowl, tost, dan kopi</p>
         </div>
         <!-- INI TOMBOL UNTUK NYAMBUNGIN KE HALAMAN LOGIN -->
-        <a href="/login" class="px-5 py-2.5 bg-gray-800 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg border border-gray-600 transition shadow-sm">
+        <a href="/login" class="menu-login-link">
             Login Pegawai
         </a>
     </header>
 
     <!-- Konten Utama (Landscape / Desktop-friendly) -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-10 py-8">
-        
+    <main class="flex-1 max-w-7xl w-full mx-auto px-5 sm:px-8 lg:px-10 py-6 sm:py-8">
         <!-- Filter Kategori -->
-        <div class="flex gap-3 mb-8">
-            <a href="/?kategori=semua" class="px-6 py-2.5 rounded-lg bg-[#f5b841] text-gray-900 font-bold shadow-sm">Semua</a>
-            <a href="/?kategori=Ricebowl" class="px-6 py-2.5 rounded-lg bg-white text-gray-700 font-semibold shadow-sm hover:bg-gray-50 transition">Ricebowl</a>
-            <a href="/?kategori=Tost" class="px-6 py-2.5 rounded-lg bg-white text-gray-700 font-semibold shadow-sm hover:bg-gray-50 transition">Tost</a>
-            <a href="/?kategori=Kopi" class="px-6 py-2.5 rounded-lg bg-white text-gray-700 font-semibold shadow-sm hover:bg-gray-50 transition">Kopi</a>
+        <div class="menu-section-heading" id="daftar-menu">
+            <div>
+                <h2>Daftar Menu</h2>
+                <p>Menu favorit untuk menemani harimu.</p>
+            </div>
+        </div>
+        <div class="flex flex-wrap gap-3 mb-8" id="menu-category-filters">
+            <a href="{{ url_for('menu_online', kategori='semua') }}" class="category-link px-6 py-2.5 rounded-xl font-bold {% if request.args.get('kategori', 'semua') == 'semua' %}is-active{% else %}bg-white text-gray-700{% endif %}">Semua</a>
+            {% for kat in kategori %}
+            <a href="{{ url_for('menu_online', kategori=kat.nama) }}" class="category-link px-6 py-2.5 rounded-xl font-semibold {% if request.args.get('kategori') == kat.nama %}is-active{% else %}bg-white text-gray-700{% endif %}">{{ kat.nama }}</a>
+            {% endfor %}
         </div>
 
         <!-- Produk tersedia dan habis  -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="menu-product-grid">
             {% for item in produk %}
                 {% if item.status_ready %}
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-transparent hover:border-[#f5b841] transition flex flex-col justify-between">
+                <div class="menu-card p-5 rounded-2xl transition flex flex-col justify-between">
                     <div>
-                        <div class="w-full h-40 rounded-xl mb-4 overflow-hidden bg-[#efede8]">
+                        <div class="menu-image w-full rounded-xl mb-4 overflow-hidden">
 
-                            {% if item.nama == 'Ricebowl Ayam Geprek' %}
+                            {% if item.gambar|gambar_produk(item.nama) %}
+                                <img src="{{ item.gambar|gambar_produk(item.nama) }}" alt="{{ item.nama }}" class="w-full h-full object-cover">
+                            {% elif item.nama == 'Ricebowl Ayam Geprek' %}
                                 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt49-WPr4cfaQ0wmF79f9XeFZ3LsQZF8N_To74ZqDimA&s=10"
                                     alt="Ricebowl Ayam Geprek"
                                     class="w-full h-full object-cover">
@@ -95,8 +103,8 @@
 
                         </div> 
                         <h3 class="font-bold text-gray-900 text-lg">{{ item.nama }}</h3>
-                        <p class="text-gray-500 text-sm mt-1">Rp {{ item.harga }}</p>
-                        <p class="text-green-600 text-sm font-semibold mt-2">
+                        <p class="menu-price mt-2">{{ item.harga|rupiah }}</p>
+                        <p class="menu-stock font-semibold mt-3">
                             Stok tersedia: {{ item.stok }} porsi
                         </p>
                     </div>
@@ -105,18 +113,20 @@
                         class="mt-5">
 
                         <button type="submit"
-                                class="block text-center bg-[#1a1714] text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-black transition shadow-md w-full">
+                                class="menu-card-button block text-center text-white px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-md w-full">
                             + Tambah ke Keranjang
                         </button>
 
                     </form>
                 </div>
                 {% else %}
-                <div class="bg-white p-5 rounded-2xl shadow-sm opacity-60 grayscale-[30%] flex flex-col justify-between border border-transparent">
+                <div class="menu-card bg-white p-5 rounded-2xl opacity-60 grayscale-[30%] flex flex-col justify-between border border-transparent">
                     <div>
-                        <div class="w-full h-40 rounded-xl mb-4 overflow-hidden bg-[#efede8]">
+                        <div class="menu-image w-full rounded-xl mb-4 overflow-hidden">
 
-                            {% if item.nama == 'Ricebowl Ayam Geprek' %}
+                            {% if item.gambar|gambar_produk(item.nama) %}
+                                <img src="{{ item.gambar|gambar_produk(item.nama) }}" alt="{{ item.nama }}" class="w-full h-full object-cover">
+                            {% elif item.nama == 'Ricebowl Ayam Geprek' %}
                                 <img
                                     src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt49-WPr4cfaQ0wmF79f9XeFZ3LsQZF8N_To74ZqDimA&s=10"
                                     alt="Ricebowl Ayam Geprek"
@@ -174,7 +184,7 @@
                         </div>
 
                         <h3 class="font-bold text-gray-900 text-lg">{{ item.nama }}</h3>
-                        <p class="text-gray-500 text-sm mt-1">Rp {{ item.harga }}</p>
+                        <p class="menu-price mt-2">{{ item.harga|rupiah }}</p>
                         <p class="text-red-600 text-sm font-semibold mt-2">
                             Stok tersedia: 0 porsi
                         </p>
@@ -192,9 +202,9 @@
     </main>
 
     <!-- Floating Bar Checkout di Bawah (Penuh seukuran layar) -->
-    <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-5 shadow-lg z-20">
+    <div class="menu-cart-bar fixed bottom-0 left-0 w-full border-t p-5 shadow-lg z-20">
 
-        <div class="max-w-7xl mx-auto flex justify-between items-center px-10">
+        <div class="max-w-7xl mx-auto flex justify-between items-center px-5 sm:px-8 lg:px-10">
 
             <div class="text-gray-700">
                 <span class="text-sm font-medium">
@@ -202,18 +212,129 @@
                 </span>
 
                 <p class="font-bold text-gray-900 text-xl mt-0.5">
-                    {{ jumlah_keranjang }} produk dipilih
+                    <span id="menu-cart-count">{{ jumlah_keranjang }}</span>
+                    produk dipilih
                 </p>
             </div>
 
             <a href="{{ url_for('checkout') }}"
-            class="bg-[#f5b841] text-gray-900 px-10 py-3.5 rounded-xl font-bold shadow-md hover:bg-yellow-500 transition text-lg">
+            class="menu-cart-button bg-[#f5b841] text-gray-900 px-10 py-3.5 rounded-xl font-bold shadow-md hover:bg-yellow-500 transition text-lg">
 
                 Lihat Keranjang
             </a>
 
         </div>
     </div>
+    <div id="menu-cart-feedback" class="menu-cart-feedback" role="status" aria-live="polite" hidden></div>
 
+    <script>
+        let categoryRequest;
+        const cartCount = document.querySelector('#menu-cart-count');
+        const cartFeedback = document.querySelector('#menu-cart-feedback');
+        let cartFeedbackTimer;
+
+        function showCartFeedback(message, isError) {
+            cartFeedback.textContent = message;
+            cartFeedback.classList.toggle('is-error', isError);
+            cartFeedback.hidden = false;
+            window.clearTimeout(cartFeedbackTimer);
+            cartFeedbackTimer = window.setTimeout(() => {
+                cartFeedback.hidden = true;
+            }, 3000);
+        }
+
+        async function loadCategory(url, addHistoryEntry) {
+            if (categoryRequest) {
+                categoryRequest.abort();
+            }
+
+            const controller = new AbortController();
+            categoryRequest = controller;
+            try {
+                const response = await fetch(url, {
+                    signal: controller.signal,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (!response.ok) {
+                    throw new Error(`Category request failed: ${response.status}`);
+                }
+
+                const page = new DOMParser().parseFromString(await response.text(), 'text/html');
+                const nextFilters = page.querySelector('#menu-category-filters');
+                const nextProducts = page.querySelector('#menu-product-grid');
+                if (!nextFilters || !nextProducts) {
+                    throw new Error('Category response is missing menu content.');
+                }
+
+                document.querySelector('#menu-category-filters').innerHTML = nextFilters.innerHTML;
+                document.querySelector('#menu-product-grid').innerHTML = nextProducts.innerHTML;
+                if (addHistoryEntry) {
+                    history.pushState({}, '', url);
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    return;
+                }
+                console.error('Unable to load menu category.', error);
+                window.location.assign(url);
+            } finally {
+                if (categoryRequest === controller) {
+                    categoryRequest = null;
+                }
+            }
+        }
+
+        document.addEventListener('click', (event) => {
+            const link = event.target.closest('.category-link');
+            if (
+                !link
+                || event.button !== 0
+                || event.metaKey
+                || event.ctrlKey
+                || event.shiftKey
+                || event.altKey
+            ) {
+                return;
+            }
+
+            event.preventDefault();
+            if (link.href !== window.location.href) {
+                loadCategory(link.href, true);
+            }
+        });
+
+        document.addEventListener('submit', async (event) => {
+            const form = event.target.closest('#menu-product-grid form');
+            if (!form) {
+                return;
+            }
+
+            event.preventDefault();
+            const button = form.querySelector('button[type="submit"]');
+            button.disabled = true;
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: new FormData(form),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Produk gagal ditambahkan ke keranjang.');
+                }
+
+                cartCount.textContent = result.jumlah_keranjang;
+                showCartFeedback(result.message, false);
+            } catch (error) {
+                showCartFeedback(error.message, true);
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        window.addEventListener('popstate', () => {
+            loadCategory(window.location.href, false);
+        });
+    </script>
 </body>
 </html>

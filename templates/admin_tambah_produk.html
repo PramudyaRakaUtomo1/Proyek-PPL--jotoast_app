@@ -4,13 +4,16 @@
     <meta charset="UTF-8">
     <title>Tambah Produk - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
 </head>
-<body class="bg-[#f4f3f0] font-sans h-screen flex items-center justify-center">
+<body class="form-page font-sans flex items-center justify-center">
 
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg">
+    {% include '_admin_toasts.html' %}
+
+    <div class="form-card bg-white p-8 rounded-2xl w-full max-w-lg">
         <h2 class="text-3xl font-extrabold text-gray-900 mb-6">Tambah Produk</h2>
         
-        <form action="/admin/produk/tambah" method="POST" class="space-y-5">
+        <form action="/admin/produk/tambah" method="POST" enctype="multipart/form-data" class="space-y-5">
             <div>
                 <label class="block text-gray-800 font-semibold mb-2">Nama Produk</label>
                 <input type="text" name="nama" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841] focus:ring-1 focus:ring-[#f5b841]">
@@ -22,31 +25,22 @@
             </div>
 
             <div>
-                <label>Link Gambar Produk</label>
-
+                <label class="block text-gray-800 font-semibold mb-2">Foto Produk</label>
                 <input
-                    type="url"
+                    type="file"
                     name="gambar"
-                    value="{{ produk.gambar or '' }}"
-                    placeholder="https://contoh.com/gambar.jpg"
+                    accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841] focus:ring-1 focus:ring-[#f5b841]"
                 >
-
-                {% if produk.gambar %}
-                    <img
-                        src="{{ produk.gambar }}"
-                        alt="{{ produk.nama }}"
-                        width="120"
-                    >
-                {% endif %}
+                <p class="mt-1 text-sm text-gray-500">Pilih file JPG, PNG, GIF, atau WEBP (maks. 5 MB).</p>
             </div>
             
             <div>
                 <label class="block text-gray-800 font-semibold mb-2">Kategori</label>
                 <select name="kategori_id" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841]">
-                    <!-- Jika diuji tanpa database lengkap, opsi ini bisa dibuat manual sementara -->
-                    <option value="1">Ricebowl</option>
-                    <option value="2">Tost</option>
-                    <option value="3">Kopi</option>
+                    {% for kat in kategori %}
+                    <option value="{{ kat.id }}">{{ kat.nama }}</option>
+                    {% endfor %}
                 </select>
             </div>
 

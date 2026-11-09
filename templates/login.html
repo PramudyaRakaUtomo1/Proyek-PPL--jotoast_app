@@ -4,38 +4,49 @@
     <meta charset="UTF-8">
     <title>Login Pegawai - Jotoast</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
 </head>
-<body class="bg-[#f4f3f0] font-sans h-screen flex items-center justify-center relative">
-    
-    <!-- Tombol Kembali -->
-    <a href="/" class="absolute top-8 left-8 bg-white px-5 py-2.5 rounded-lg font-bold text-gray-700 shadow-sm border border-gray-200 hover:bg-gray-50 transition">
-        &larr; Kembali ke Beranda
-    </a>
+<body class="login-page">
+    <main class="login-shell">
+        <section class="login-brand-panel" aria-label="Jotoast">
+            <a href="/" class="login-back">&larr; Kembali ke Beranda</a>
+            <div class="login-brand-copy">
+                <h1>JOTOAST</h1>
+                <p>Ricebowl, tost, dan kopi</p>
+            </div>
+        </section>
 
-    <!-- Form Login -->
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h2 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">Login Pegawai</h2>
-        {% if error %}
-        <p class="text-red-500 text-sm mb-4 text-center">{{ error }}</p>
-        {% endif %}
-        <form action="/login" method="POST" class="space-y-5">
-            <div>
-                <label class="block text-gray-800 font-semibold mb-2">Username</label>
-                <input type="text" name="username" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841]">
+        <section class="login-form-panel">
+            <div class="login-form-content">
+                <h2>Masuk</h2>
+                {% if error %}
+                <p class="login-error" role="alert">{{ error }}</p>
+                {% endif %}
+                <form action="{{ url_for('login') }}" method="POST" class="login-form">
+                    <fieldset class="login-role-options" aria-label="Pilih jenis akun">
+                        <legend class="sr-only">Masuk sebagai</legend>
+                        <label class="login-role-option">
+                            <input type="radio" name="role" value="owner" checked>
+                            <span>Admin</span>
+                        </label>
+                        <label class="login-role-option">
+                            <input type="radio" name="role" value="kasir">
+                            <span>Kasir</span>
+                        </label>
+                    </fieldset>
+
+                    <div class="login-field">
+                        <label for="username">Masukkan Username</label>
+                        <input id="username" type="text" name="username" autocomplete="username" placeholder="Masukkan username" required>
+                    </div>
+                    <div class="login-field">
+                        <label for="password">Masukkan Kata Sandi</label>
+                        <input id="password" type="password" name="password" autocomplete="current-password" placeholder="Masukkan kata sandi" required>
+                    </div>
+                    <button type="submit" class="login-submit">Masuk</button>
+                </form>
             </div>
-            <div>
-                <label class="block text-gray-800 font-semibold mb-2">Kata Sandi</label>
-                <input type="password" name="password" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841]">
-            </div>
-            <div>
-                <label class="block text-gray-800 font-semibold mb-2">Masuk Sebagai</label>
-                <select name="role" class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841]">
-                    <option value="owner">Owner / Admin</option>
-                    <option value="kasir">Kasir</option>
-                </select>
-            </div>
-            <button type="submit" class="w-full py-3 rounded-lg bg-[#1a1714] text-white font-bold hover:bg-black transition mt-4">Masuk</button>
-        </form>
-    </div>
+        </section>
+    </main>
 </body>
 </html>

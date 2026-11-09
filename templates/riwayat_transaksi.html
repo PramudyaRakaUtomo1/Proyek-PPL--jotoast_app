@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Transaksi - Jotoast</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
+</head>
+<body class="{% if role == 'owner' %}admin-page font-sans min-h-screen{% else %}orders-page transaction-history-page{% endif %}">
+    {% if role == 'owner' %}
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <a href="{{ url_for('kelola_produk') }}" class="admin-brand">Jotoast</a>
+            <p class="admin-nav-label">Manajemen</p>
+            <nav class="admin-nav" aria-label="Navigasi admin">
+                <a href="{{ url_for('kelola_produk') }}" class="admin-nav-link">
+                    <span aria-hidden="true">▦</span> Produk
+                </a>
+                <a href="{{ url_for('kelola_kategori') }}" class="admin-nav-link">
+                    <span aria-hidden="true">◫</span> Kategori
+                </a>
+                <a href="{{ url_for('riwayat_transaksi') }}" class="admin-nav-link is-active">
+                    <span aria-hidden="true">▤</span> Transaksi
+                </a>
+            </nav>
+            <div class="admin-sidebar-footer">
+                <span class="admin-avatar" aria-hidden="true">J</span>
+                <span class="admin-account-label">Admin Jotoast</span>
+                <a href="{{ url_for('logout') }}" class="admin-logout" aria-label="Keluar" title="Keluar">↗</a>
+            </div>
+        </aside>
+        <main class="admin-main">
+            <div class="admin-content transaction-admin-content p-5 sm:p-8 lg:p-10">
+    {% else %}
+    <main class="transaction-history-container">
+    {% endif %}
+                <div class="admin-heading">
+                    <div>
+                        <p class="admin-eyebrow">Penjualan</p>
+                        <h1 class="admin-title">Riwayat Transaksi</h1>
+                    </div>
+                    {% if role == 'kasir' %}
+                    <a href="{{ url_for('kasir') }}" class="admin-add-button admin-add-secondary">Kembali ke Kasir</a>
+                    {% else %}
+                    <a href="{{ url_for('menu_online') }}" class="admin-add-button admin-add-secondary">Kembali ke Toko</a>
+                    {% endif %}
+                </div>
+
+                <div class="transaction-summary">
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Total transaksi</span>
+                        <strong>{{ transaksi|length }}</strong>
+                    </div>
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Total penjualan</span>
+                        <strong>{{ transaksi|sum(attribute='total_harga')|rupiah }}</strong>
+                    </div>
+                </div>
+
+                <section class="admin-panel admin-table-panel">
+                    <div class="admin-table-scroll">
+                        <table class="admin-product-table transaction-history-table w-full text-left border-collapse">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Tanggal &amp; Waktu</th>
+                                    <th>Pelanggan</th>
+                                    <th>Sumber</th>
+                                    <th>Pesanan</th>
+                                    <th>Pembayaran</th>
+                                    <th>Status</th>
+                                    <th class="text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in transaksi %}
+                                <tr>
+                                    <td class="admin-muted">#{{ item.id }}</td>
+                                    <td>
+                                        {% if item.tanggal_waktu %}
+                                        {{ item.tanggal_waktu.strftime('%d-%m-%Y %H:%M') }}
+                                        {% else %}
+                                        <span class="admin-muted">Data lama</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.nama_pemesan or 'Pelanggan' }}</td>
+                                    <td>{{ item.sumber }}</td>
+                                    <td class="transaction-items">
+                                        {% for detail in detail_per_transaksi.get(item.id, []) %}
+                                        <span>{{ detail.nama_produk }} × {{ detail.jumlah }}</span>
+                                        {% else %}
+                                        <span class="admin-muted">Tidak ada detail</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ item.metode_bayar }}</td>
+                                    <td>
+                                        <span class="admin-status {% if item.status == 'Selesai' %}is-ready{% else %}is-empty{% endif %}">
+                                            {{ item.status }}
+                                        </span>
+                                    </td>
+                                    <td class="admin-product-price text-right">{{ item.total_harga|rupiah }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="admin-empty-row">Belum ada transaksi yang tercatat.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                {% if role == 'kasir' %}
+                {% endif %}
+    {% if role == 'owner' %}
+            </div>
+        </main>
+    </div>
+    {% else %}
+    </main>
+    {% endif %}
+</body>
+</html>
