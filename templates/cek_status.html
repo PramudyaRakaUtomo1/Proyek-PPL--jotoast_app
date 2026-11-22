@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Status Pesanan - Jotoast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
+</head>
+<body class="checkout-page font-sans flex justify-center min-h-screen">
+    <div class="checkout-shell w-full min-h-screen relative">
+
+        <div class="checkout-header px-6 py-6 flex items-center gap-4">
+            <h1 class="text-white text-2xl font-bold tracking-tight">Cek Pesanan</h1>
+        </div>
+
+        <div class="page-container space-y-6">
+
+            {% include '_notifications.html' %}
+
+            <div class="checkout-grid checkout-grid--even">
+
+                <!-- Form kode pesanan -->
+                <div class="checkout-items-column">
+                    <a href="{{ url_for('home') }}" class="btn-back btn-back--light">&larr; Beranda</a>
+                    <div class="space-y-6">
+                        <form action="{{ url_for('cek_status') }}" method="POST" class="checkout-card p-5 sm:p-6 rounded-2xl space-y-4">
+                            <div>
+                                <label for="kode" class="block text-gray-800 font-semibold mb-2">Kode Pesanan</label>
+                                <input type="text" id="kode" name="kode" required maxlength="12" placeholder="Contoh: JT-A1B2C3"
+                                       class="w-full p-4 border border-gray-300 rounded-xl uppercase tracking-wider focus:border-[#f5b841]">
+                                <p class="text-xs text-gray-500 mt-2">Kode ada di halaman setelah kamu membuat pesanan.</p>
+                            </div>
+                            <button type="submit" class="checkout-submit w-full text-gray-900 px-6 py-4 rounded-xl font-bold shadow-lg transition text-lg">Cek Status</button>
+                        </form>
+
+                        {% if kode_terakhir %}
+                        <a href="{{ url_for('status_pesanan', kode=kode_terakhir) }}"
+                           class="block text-center rounded-xl bg-[#fff6dd] border border-[#f3d28a] px-5 py-3 text-sm font-bold text-[#6b4a0d] hover:bg-[#ffefc2]">
+                            Lihat pesanan terakhir saya ({{ kode_terakhir }})
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Penjelasan tahap pesanan -->
+                <div class="checkout-card bg-white rounded-2xl p-5 sm:p-6">
+                    <h2 class="font-bold text-gray-900 text-lg">Tahapan pesananmu</h2>
+                    <ol class="mt-4 space-y-4 text-sm text-gray-600">
+                        <li><strong class="text-gray-900">Menunggu Pembayaran</strong><br>Khusus pembayaran QRIS: menunggu pembayaran dikonfirmasi kasir.</li>
+                        <li><strong class="text-gray-900">Diproses</strong><br>Pesananmu sedang dibuat. Pesanan tunai langsung diproses tanpa menunggu pembayaran.</li>
+                        <li><strong class="text-gray-900">Siap Diambil</strong><br>Ambil pesanan di outlet dan sebutkan nama pemesan. Pembayaran tunai dilakukan saat pengambilan.</li>
+                        <li><strong class="text-gray-900">Selesai</strong><br>Pesanan sudah diterima. Terima kasih!</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

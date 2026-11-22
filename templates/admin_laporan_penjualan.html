@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Penjualan - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
+</head>
+<body class="admin-page font-sans min-h-screen">
+    {% include '_admin_toasts.html' %}
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <a href="{{ url_for('kelola_produk') }}" class="admin-brand">Jotoast</a>
+            <p class="admin-nav-label">Manajemen</p>
+            <nav class="admin-nav" aria-label="Navigasi admin">
+                <a href="{{ url_for('kelola_produk') }}" class="admin-nav-link"><span aria-hidden="true">▦</span> Produk</a>
+                <a href="{{ url_for('kelola_kategori') }}" class="admin-nav-link"><span aria-hidden="true">◫</span> Kategori</a>
+                <a href="{{ url_for('riwayat_transaksi') }}" class="admin-nav-link"><span aria-hidden="true">▤</span> Transaksi</a>
+                <a href="{{ url_for('admin_diagram') }}" class="admin-nav-link"><span aria-hidden="true">▥</span> Diagram</a>
+                <a href="{{ url_for('admin_pendapatan') }}" class="admin-nav-link"><span aria-hidden="true">Rp</span> Pendapatan &amp; Laba</a>
+                <a href="{{ url_for('admin_laporan_penjualan') }}" class="admin-nav-link is-active" aria-current="page"><span aria-hidden="true">▧</span> Laporan Penjualan</a>
+            </nav>
+            <div class="admin-sidebar-footer">
+                <span class="admin-avatar" aria-hidden="true">J</span>
+                <span class="admin-account-label">Admin Jotoast</span>
+                <a href="{{ url_for('logout') }}" class="admin-logout" aria-label="Keluar" title="Keluar">↗</a>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-content p-5 sm:p-8 lg:p-10">
+                <div class="admin-heading">
+                    <div>
+                        <p class="admin-eyebrow">Rekap penjualan</p>
+                        <h1 class="admin-title">Laporan Penjualan</h1>
+                    </div>
+                </div>
+
+                <form class="admin-report-filter" method="GET">
+                    <label for="bulan">Periode laporan</label>
+                    <input id="bulan" name="bulan" type="month" value="{{ bulan }}" required>
+                    <button class="admin-add-button" type="submit">Tampilkan</button>
+                </form>
+
+                <h2 class="admin-report-period">Laporan Harian — {{ nama_bulan }}</h2>
+                <p class="admin-report-intro">Penjualan dihitung dari transaksi yang sudah lunas, berdasarkan waktu pembayaran.</p>
+                <div class="admin-report-summary">
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Pendapatan lunas</span>
+                        <strong>{{ laporan.pendapatan|rupiah }}</strong>
+                    </div>
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Jumlah transaksi lunas</span>
+                        <strong>{{ laporan.jumlah_transaksi }}</strong>
+                    </div>
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Laba tercatat*</span>
+                        <strong>{{ laporan.laba_tercatat|rupiah }}</strong>
+                    </div>
+                </div>
+
+                {% if laporan.transaksi_tidak_lengkap %}
+                <p class="admin-report-warning admin-report-warning-banner">
+                    Laba tercatat belum lengkap: {{ laporan.transaksi_tidak_lengkap }} transaksi memiliki rincian tanpa harga modal.
+                </p>
+                {% endif %}
+                <section class="admin-panel admin-table-panel admin-report-table-card">
+                    <div class="admin-report-table-heading">
+                        <h2>Rincian Harian</h2>
+                        <p>Hari tanpa transaksi tetap ditampilkan agar rekap satu bulan utuh.</p>
+                    </div>
+                    <div class="admin-report-column-guide">
+                        <p><strong>Tanggal:</strong> tanggal pembayaran diterima. Jika waktu pembayaran tidak tercatat, digunakan tanggal transaksi.</p>
+                        <p><strong>Transaksi Lunas:</strong> jumlah transaksi dengan status pembayaran Lunas pada tanggal tersebut.</p>
+                        <p><strong>Pendapatan:</strong> total nilai transaksi lunas pada tanggal tersebut.</p>
+                        <p><strong>Laba Tercatat*:</strong> pendapatan item dikurangi modalnya, hanya untuk item yang harga modalnya diketahui.</p>
+                        <p><strong>Transaksi Modal Belum Lengkap:</strong> jumlah transaksi lunas yang rincian produknya tidak ada atau ada harga modal yang belum tercatat.</p>
+                    </div>
+                    <div class="admin-table-scroll admin-report-scroll">
+                        <table class="admin-product-table admin-report-table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Transaksi Lunas</th>
+                                    <th>Pendapatan</th>
+                                    <th>Laba Tercatat*</th>
+                                    <th>Transaksi Modal Belum Lengkap</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hari in data_harian %}
+                                <tr>
+                                    <td>{{ hari.tanggal.strftime('%d-%m-%Y') }}</td>
+                                    <td>{{ hari.jumlah_transaksi }}</td>
+                                    <td>{{ hari.pendapatan|rupiah }}</td>
+                                    <td>{{ hari.laba_tercatat|rupiah }}</td>
+                                    <td>{{ hari.transaksi_tidak_lengkap }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="admin-panel admin-report-table-card admin-report-months">
+                    <div class="admin-report-table-heading">
+                        <h2>Rekap Bulanan — 12 Bulan Terakhir</h2>
+                        <p>Bandingkan pendapatan lunas dan jumlah transaksi setiap bulan.</p>
+                    </div>
+                    <div class="admin-table-scroll admin-report-scroll">
+                        <table class="admin-product-table admin-report-table">
+                            <thead>
+                                <tr><th>Bulan</th><th>Transaksi Lunas</th><th>Pendapatan</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for ringkasan in riwayat_bulanan %}
+                                <tr>
+                                    <td>{{ ringkasan.bulan }}</td>
+                                    <td>{{ ringkasan.jumlah_transaksi }}</td>
+                                    <td>{{ ringkasan.pendapatan|rupiah }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                <p class="admin-report-footnote">*Laba tercatat hanya mencakup item dengan harga modal diketahui dan belum memperhitungkan biaya operasional, pajak, atau diskon di luar harga item.</p>
+                <a href="{{ url_for('home') }}" class="admin-back-link">
+                    <span aria-hidden="true">←</span> Kembali ke Beranda
+                </a>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

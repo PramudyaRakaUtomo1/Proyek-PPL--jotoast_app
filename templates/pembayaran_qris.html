@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran QRIS - Jotoast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
+</head>
+<body class="checkout-page font-sans flex justify-center min-h-screen">
+    <div class="checkout-shell w-full min-h-screen relative">
+
+        <div class="checkout-header px-6 py-6 flex items-center gap-4">
+            <a href="{{ url_for('status_pesanan', kode=transaksi.kode_pesanan) }}" class="btn-back">&larr; Status</a>
+            <h1 class="text-white text-2xl font-bold tracking-tight">Bayar dengan QRIS</h1>
+        </div>
+
+        <div class="page-container space-y-6">
+
+            {% include '_notifications.html' %}
+
+            <div class="checkout-grid checkout-grid--even">
+
+                <!-- Kiri: total + gambar QRIS -->
+                <div class="checkout-card checkout-sticky bg-white rounded-2xl p-6 text-center">
+                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500">Total Pembayaran</p>
+                    <p class="text-4xl font-extrabold text-gray-900 mt-1">{{ transaksi.total_harga|rupiah }}</p>
+                    <p class="text-sm text-gray-500 mt-1">Kode pesanan {{ transaksi.kode_pesanan }}</p>
+
+                    <div class="qris-image-frame mt-5">
+                        {% if qris_demo %}
+                        <img src="{{ url_for('qris_demo_image', kode=transaksi.kode_pesanan) }}"
+                             alt="QR pembayaran demo untuk pesanan {{ transaksi.kode_pesanan }}"
+                             class="qris-payment-image">
+                        {% elif qris_ada %}
+                        <img src="{{ url_for('static', filename=qris_filename) }}"
+                             alt="QRIS Jotoast"
+                             class="qris-payment-image">
+                        {% else %}
+                        <p class="text-sm text-gray-400 px-4">Gambar QRIS belum dipasang.</p>
+                        {% endif %}
+                    </div>
+                    {% if qris_demo %}
+                    <p class="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800">
+                        Mode demo: QR ini tidak memindahkan uang. Scan akan menyelesaikan pembayaran simulasi.
+                    </p>
+                    {% else %}
+                    <p class="mt-3 text-xs text-gray-500">
+                        Setelah pembayaran asli dilakukan, kasir akan memverifikasi dan memperbarui status.
+                    </p>
+                    {% endif %}
+                    {% if not qris_demo %}
+                    <p class="text-xs text-gray-500 mt-3">Pastikan nominal yang dibayar sama persis dengan total di atas.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Kanan: langkah pembayaran -->
+                <div class="space-y-6">
+
+                    {% if qris_demo %}
+                    <ol class="checkout-card bg-white rounded-2xl p-5 space-y-2 text-sm text-gray-700 list-decimal list-inside">
+                        <li>Scan QR menggunakan kamera ponsel.</li>
+                        <li>Buka tautan yang muncul untuk menyelesaikan simulasi.</li>
+                        <li>Status pembayaran berubah menjadi lunas dan pesanan mulai diproses.</li>
+                    </ol>
+                    <div class="checkout-card p-5 sm:p-6 rounded-2xl space-y-3">
+                        <a href="{{ qris_demo_url }}"
+                           class="checkout-submit block w-full text-center text-gray-900 px-6 py-4 rounded-xl font-bold shadow-lg">
+                            Simulasikan Pembayaran
+                        </a>
+                        <p class="text-xs text-center text-gray-500">
+                            Tombol ini hanya untuk mencoba alur tanpa memindai QR.
+                        </p>
+                    </div>
+                    {% else %}
+                    <ol class="checkout-card bg-white rounded-2xl p-5 space-y-2 text-sm text-gray-700 list-decimal list-inside">
+                        <li>Buka aplikasi bank atau e-wallet, lalu pilih <strong>Scan QRIS</strong>.</li>
+                        <li>Scan kode dan bayar sesuai nominal.</li>
+                        <li>Unggah bukti pembayaran agar kasir dapat memverifikasi.</li>
+                    </ol>
+                    <form action="{{ url_for('bayar_qris', kode=transaksi.kode_pesanan) }}"
+                          method="POST" enctype="multipart/form-data"
+                          class="checkout-card p-5 sm:p-6 rounded-2xl space-y-4">
+                        {% if transaksi.bukti_bayar %}
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 mb-2">Bukti pembayaran terkirim</p>
+                            <a href="{{ url_for('static', filename=transaksi.bukti_bayar) }}"
+                               target="_blank" rel="noopener">
+                                <img src="{{ url_for('static', filename=transaksi.bukti_bayar) }}"
+                                     alt="Bukti pembayaran yang telah dikirim"
+                                     class="w-full max-h-64 object-contain rounded-xl border border-gray-200 bg-white">
+                            </a>
+                            <p class="text-xs text-gray-500 mt-2">
+                                Pembayaran menunggu verifikasi. Kamu bisa memilih file baru untuk mengganti bukti.
+                            </p>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <label for="bukti" class="block text-gray-800 font-semibold mb-2">
+                                {% if transaksi.bukti_bayar %}Ganti bukti pembayaran{% else %}Bukti pembayaran{% endif %}
+                            </label>
+                            <input type="file" id="bukti" name="bukti" required
+                                   accept="image/jpeg,image/png,image/webp"
+                                   class="block w-full text-sm text-gray-700 border border-gray-300 rounded-xl p-3 bg-white">
+                            <p class="text-xs text-gray-500 mt-2">Format JPG, PNG, atau WEBP. Maksimal 5 MB.</p>
+                        </div>
+                        <button type="submit"
+                                class="checkout-submit w-full text-gray-900 px-6 py-4 rounded-xl font-bold shadow-lg">
+                            {% if transaksi.bukti_bayar %}Kirim Ulang Bukti Pembayaran{% else %}Kirim Bukti Pembayaran{% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

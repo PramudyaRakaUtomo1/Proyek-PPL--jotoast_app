@@ -7,222 +7,131 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
 </head>
-<body class="menu-page flex flex-col min-h-screen relative pb-28">
+<body class="menu-page flex flex-col min-h-screen relative pb-36">
+    {% include '_notifications.html' %}
 
-    <!-- Header Landscape (Penuh) -->
+    <!-- Header -->
     <header class="menu-header flex justify-between items-center w-full">
         <div>
-            <h1 class="text-[#f5b841] text-3xl font-bold tracking-tight">Jotoast</h1>
+            <a href="{{ url_for('home') }}" class="menu-header-brand text-[#f5b841] text-3xl font-bold tracking-tight">Jotoast</a>
             <p class="text-gray-300 text-sm mt-1">Pesan ricebowl, tost, dan kopi</p>
         </div>
-        <!-- INI TOMBOL UNTUK NYAMBUNGIN KE HALAMAN LOGIN -->
-        <a href="/login" class="menu-login-link">
-            Login Pegawai
-        </a>
+        <nav class="flex items-center gap-3">
+            <a href="{{ url_for('cek_status') }}" class="menu-login-link">Cek Pesanan</a>
+            <a href="{{ url_for('login') }}" class="menu-login-link">Login Pegawai</a>
+        </nav>
     </header>
 
-    <!-- Konten Utama (Landscape / Desktop-friendly) -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-5 sm:px-8 lg:px-10 py-6 sm:py-8">
-        <!-- Filter Kategori -->
+
+        <a href="{{ url_for('home') }}" class="btn-back btn-back--light">&larr; Beranda</a>
+
         <div class="menu-section-heading" id="daftar-menu">
             <div>
                 <h2>Daftar Menu</h2>
-                <p>Menu favorit untuk menemani harimu.</p>
+                <p>Pilih menu, varian, dan jumlah pesananmu.</p>
             </div>
         </div>
-        <div class="flex flex-wrap gap-3 mb-8" id="menu-category-filters">
-            <a href="{{ url_for('menu_online', kategori='semua') }}" class="category-link px-6 py-2.5 rounded-xl font-bold {% if request.args.get('kategori', 'semua') == 'semua' %}is-active{% else %}bg-white text-gray-700{% endif %}">Semua</a>
+
+        <!-- Filter kategori + urutan harga -->
+        {% set u = urut_aktif if urut_aktif != 'default' else None %}
+        <div class="flex flex-wrap items-center gap-3 mb-8" id="menu-category-filters">
+            <a href="{{ url_for('menu_online', kategori='semua', urut=u) }}" class="category-link px-6 py-2.5 rounded-xl font-bold {% if kategori_aktif == 'semua' %}is-active{% else %}bg-white text-gray-700{% endif %}">Semua</a>
             {% for kat in kategori %}
-            <a href="{{ url_for('menu_online', kategori=kat.nama) }}" class="category-link px-6 py-2.5 rounded-xl font-semibold {% if request.args.get('kategori') == kat.nama %}is-active{% else %}bg-white text-gray-700{% endif %}">{{ kat.nama }}</a>
+            <a href="{{ url_for('menu_online', kategori=kat.nama, urut=u) }}" class="category-link px-6 py-2.5 rounded-xl font-semibold {% if kategori_aktif == kat.nama %}is-active{% else %}bg-white text-gray-700{% endif %}">{{ kat.nama }}</a>
             {% endfor %}
+
+            <label class="w-full sm:w-auto sm:ml-auto flex items-center gap-2 text-sm font-semibold text-gray-600">
+                Urutkan
+                <select id="urut-menu" class="flex-1 sm:flex-none p-3 border border-gray-300 rounded-xl bg-white text-base text-gray-800">
+                    {% for kode, label in [('default', 'Bawaan'), ('termurah', 'Harga termurah'), ('termahal', 'Harga termahal'), ('nama', 'Nama A-Z')] %}
+                    <option value="{{ url_for('menu_online', kategori=kategori_aktif, urut=(kode if kode != 'default' else None)) }}" {% if urut_aktif == kode %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
         </div>
 
-        <!-- Produk tersedia dan habis  -->
+        <!-- Daftar produk -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="menu-product-grid">
             {% for item in produk %}
-                {% if item.status_ready %}
-                <div class="menu-card p-5 rounded-2xl transition flex flex-col justify-between">
-                    <div>
-                        <div class="menu-image w-full rounded-xl mb-4 overflow-hidden">
-
-                            {% if item.gambar|gambar_produk(item.nama) %}
-                                <img src="{{ item.gambar|gambar_produk(item.nama) }}" alt="{{ item.nama }}" class="w-full h-full object-cover">
-                            {% elif item.nama == 'Ricebowl Ayam Geprek' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt49-WPr4cfaQ0wmF79f9XeFZ3LsQZF8N_To74ZqDimA&s=10"
-                                    alt="Ricebowl Ayam Geprek"
-                                    class="w-full h-full object-cover">
-
-                            {% elif item.nama == 'Ricebowl Sapi Lada Hitam' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBpZVZp8kvcr0-mE5GjMRn6t7iSCRBNMmBSWuGkxUAvg&s=10"
-                                    alt="Ricebowl Sapi Lada Hitam"    
-                                    class="w-full h-full object-cover">
-                            
-                            {% elif item.nama == 'Ricebowl Sambal Matah' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSl3kU52Ipt-pszy3YqSM3JV8Fy-ztfOZczvpR-9QuemA&s=10"
-                                    alt="Ricebowl Sambal Mata"
-                                    class="w-full h-full object-cover">
-
-                            {% elif item.nama == 'Tost Coklat Keju' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrakDfR2Hphw55iVvLJbshl1TEO4dy_gMV19xoYeleCyoIAoXTqSbimhk&s=10"
-                                    alt="Tost Coklat Keju"
-                                    class="w-full h-full object-cover">
-
-                            {% elif item.nama == 'Tost Telur Smoked Beef' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwiekxxzXk4JAKU4PC9XDjV1KfJlWi9S_SLX2rc3TYtQ&s=10"
-                                    alt="Tost Telur Smoked Beef"
-                                    class="w-full h-full object-cover">
-
-                            {% elif item.nama == 'Tost Selai Kacang' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5Cnq299qkQCYeX7zfsdOvFpD-e0JyPir95D2S-f1HLQ&s=10"
-                                    alt="Tost Selai Kacang"
-                                    class="w-full h-full object-cover">
-
-                            {% elif item.nama == 'Kopi Susu Gula Aren' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwZGr8NNibHhVGX5qFF-jV4hmACCOgBE4SEKZSLK0fqA&s=10"
-                                    alt="Kopi Susu Gula Aren"
-                                    class="w-full h-full object-cover">
-                            
-                            {% elif item.nama == 'Kopi Americano' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsqI90JZHYgc6TLGtybNB5Z5cwcBqiqZ2hdB6oMKC3KQ&s=10"
-                                    alt="Kopi Americano"
-                                    class="w-full h-full object-cover">
-
-                            {% elif item.nama == 'Es Matcha Latte' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPonM0hn0Sp4B91LmYcjj5zKkVftTp5HmU8UpwKm-zWg&s=10"
-                                    alt="Es Matcha Latte"
-                                    class="w-full h-full object-cover">
-
-                            {% elif item.nama == 'Ricebowl chicken with egg' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3pYcbJ96o0qUdu0xNVobB5viBgFKCd8C2NwWur1hWsQ&s=10"
-                                    alt="Ricebowl chicken with egg"
-                                    class="w-full h-full object-cover">
-
-                            {% else %}
-                                <div class="w-full h-full bg-[#efede8]"></div>
-                            {% endif %}
-
-                        </div> 
-                        <h3 class="font-bold text-gray-900 text-lg">{{ item.nama }}</h3>
-                        <p class="menu-price mt-2">{{ item.harga|rupiah }}</p>
-                        <p class="menu-stock font-semibold mt-3">
-                            Stok tersedia: {{ item.stok }} porsi
-                        </p>
+            {% set tersedia = item.status_ready and item.stok > 0 %}
+            {% set src = item.gambar|gambar_produk(item.nama) %}
+            <div class="menu-card bg-white p-5 rounded-2xl flex flex-col justify-between {% if not tersedia %}opacity-70{% endif %}"
+                 data-harga="{{ item.harga }}">
+                <div>
+                    <div class="menu-image w-full rounded-xl mb-4 overflow-hidden relative">
+                        {% if src %}
+                        <img src="{{ src }}" alt="{{ item.nama }}" class="w-full h-full object-cover {% if not tersedia %}grayscale{% endif %}">
+                        {% else %}
+                        <div class="w-full h-full bg-[#efede8]"></div>
+                        {% endif %}
+                        <!-- Badge status ketersediaan -->
+                        <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-extrabold
+                            {% if tersedia %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-700{% endif %}">
+                            {{ 'Ready' if tersedia else 'Habis' }}
+                        </span>
                     </div>
-                    <form action="{{ url_for('tambah_keranjang', produk_id=item.id) }}"
-                        method="POST"
-                        class="mt-5">
-
-                        <button type="submit"
-                                class="menu-card-button block text-center text-white px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-md w-full">
-                            + Tambah ke Keranjang
-                        </button>
-
-                    </form>
+                    <p class="text-xs font-bold uppercase tracking-wider text-[#b57a14]">{{ item.kategori_rel.nama }}</p>
+                    <h3 class="font-bold text-gray-900 text-lg">{{ item.nama }}</h3>
+                    <p class="menu-price mt-1">{{ item.harga|rupiah }}</p>
+                    <p class="text-sm font-semibold mt-2 {% if tersedia %}text-green-700{% else %}text-red-600{% endif %}">
+                        {% if tersedia %}Stok tersedia: {{ item.stok }} porsi{% else %}Stok habis{% endif %}
+                    </p>
                 </div>
-                {% else %}
-                <div class="menu-card bg-white p-5 rounded-2xl opacity-60 grayscale-[30%] flex flex-col justify-between border border-transparent">
-                    <div>
-                        <div class="menu-image w-full rounded-xl mb-4 overflow-hidden">
 
-                            {% if item.gambar|gambar_produk(item.nama) %}
-                                <img src="{{ item.gambar|gambar_produk(item.nama) }}" alt="{{ item.nama }}" class="w-full h-full object-cover">
-                            {% elif item.nama == 'Ricebowl Ayam Geprek' %}
-                                <img
-                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt49-WPr4cfaQ0wmF79f9XeFZ3LsQZF8N_To74ZqDimA&s=10"
-                                    alt="Ricebowl Ayam Geprek"
-                                    class="w-full h-full object-cover">
+                {% if tersedia %}
+                <form action="{{ url_for('tambah_keranjang', produk_id=item.id) }}" method="POST" class="mt-4 space-y-3">
 
-                            {% elif item.nama == 'Ricebowl Sapi Lada Hitam' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBpZVZp8kvcr0-mE5GjMRn6t7iSCRBNMmBSWuGkxUAvg&s=10"
-                                    alt="Ricebowl Sapi Lada Hitam"
-                                    class="w-full h-full object-cover">
-                            
-                            {% elif item.nama == 'Ricebowl Sambal Matah' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSl3kU52Ipt-pszy3YqSM3JV8Fy-ztfOZczvpR-9QuemA&s=10"
-                                    alt="Ricebowl Sambal Mata"
-                                    class="w-full h-full object-cover">
+                    {% if item.varian %}
+                    <select name="varian_id" required class="js-varian w-full p-3 border border-gray-300 rounded-xl text-base bg-white text-gray-800">
+                        <option value="" disabled selected>Pilih varian</option>
+                        {% for v in item.varian %}
+                        <option value="{{ v.id }}" data-tambah="{{ v.harga_tambahan }}">
+                            {{ v.nama }}{% if v.harga_tambahan %} (+{{ v.harga_tambahan|rupiah }}){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
 
-                            {% elif item.nama == 'Toast Coklat Keju' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrakDfR2Hphw55iVvLJbshl1TEO4dy_gMV19xoYeleCyoIAoXTqSbimhk&s=10"
-                                    alt="Tost Coklat Keju"
-                                    class="w-full h-full object-cover">
-                            
-                            {% elif item.nama == 'Tost Telur Smoked Beef' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwiekxxzXk4JAKU4PC9XDjV1KfJlWi9S_SLX2rc3TYtQ&s=10"
-                                    alt="Tost Telur Smoked Beef"
-                                    class="w-full h-full object-cover">
-
-                            {% elif item.nama == 'Tost Selai Kacang' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5Cnq299qkQCYeX7zfsdOvFpD-e0JyPir95D2S-f1HLQ&s=10"
-                                    alt="Tost Selai Kacang"
-                                    class="w-full h-full object-cover">
-                            
-                            {% elif item.nama == 'Kopi Susu Gula Aren' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwZGr8NNibHhVGX5qFF-jV4hmACCOgBE4SEKZSLK0fqA&s=10"
-                                    alt="Kopi Susu Gula Aren"
-                                    class="w-full h-full object-cover">
-                            
-                            {% elif item.nama == 'Kopi Americano' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsqI90JZHYgc6TLGtybNB5Z5cwcBqiqZ2hdB6oMKC3KQ&s=10"
-                                    alt="Kopi Americano"
-                                    class="w-full h-full object-cover">
-                            
-                            {% elif item.nama == 'Es Matcha Latte' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPonM0hn0Sp4B91LmYcjj5zKkVftTp5HmU8UpwKm-zWg&s=10"
-                                    alt="Es Matcha Latte"
-                                    class="w-full h-full object-cover">
-                            
-                            {% elif item.nama == 'Ricebowl chicken with egg' %}
-                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3pYcbJ96o0qUdu0xNVobB5viBgFKCd8C2NwWur1hWsQ&s=10"
-                                    alt="Ricebowl chicken with egg"
-                                    class="w-full h-full object-cover">
-
-                            {% else %}
-                                <div class="w-full h-full bg-[#efede8]"></div>
-                            {% endif %}
-
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <button type="button" class="js-minus w-10 h-10 rounded-lg bg-[#f4f3f0] border border-gray-300 font-bold text-gray-800 hover:bg-gray-200" aria-label="Kurangi">&minus;</button>
+                            <input type="number" name="jumlah" value="0" min="0" max="{{ item.stok }}" readonly
+                                   class="js-jumlah w-10 text-center font-bold text-gray-900 bg-transparent border-0 p-0">
+                            <button type="button" class="js-plus w-10 h-10 rounded-lg bg-[#f4f3f0] border border-gray-300 font-bold text-gray-800 hover:bg-gray-200" aria-label="Tambah">+</button>
                         </div>
-
-                        <h3 class="font-bold text-gray-900 text-lg">{{ item.nama }}</h3>
-                        <p class="menu-price mt-2">{{ item.harga|rupiah }}</p>
-                        <p class="text-red-600 text-sm font-semibold mt-2">
-                            Stok tersedia: 0 porsi
+                        <p class="text-sm text-gray-500 text-right">Subtotal
+                            <strong class="js-subtotal block text-gray-900 text-base">Rp0</strong>
                         </p>
                     </div>
 
-                    <div class="mt-5 text-center bg-gray-200 text-[#c62828] px-5 py-2.5 rounded-xl text-sm font-bold w-full cursor-not-allowed">
-                        Habis
-                    </div>
-                </div>
+                    <button type="submit" disabled class="menu-card-button block text-center text-white px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-md w-full">
+                        + Tambah ke Keranjang
+                    </button>
+                </form>
+                {% else %}
+                <div class="mt-5 text-center bg-gray-200 text-[#c62828] px-5 py-2.5 rounded-xl text-sm font-bold w-full cursor-not-allowed">Habis</div>
                 {% endif %}
+            </div>
             {% else %}
-                <p class="text-gray-500 col-span-full">Menu belum tersedia.</p>
+            <p class="text-gray-500 col-span-full">Menu belum tersedia.</p>
             {% endfor %}
         </div>
     </main>
 
-    <!-- Floating Bar Checkout di Bawah (Penuh seukuran layar) -->
+    <!-- Bar keranjang -->
     <div class="menu-cart-bar fixed bottom-0 left-0 w-full border-t p-5 shadow-lg z-20">
-
         <div class="max-w-7xl mx-auto flex justify-between items-center px-5 sm:px-8 lg:px-10">
-
             <div class="text-gray-700">
-                <span class="text-sm font-medium">
-                    Keranjang Belanja
-                </span>
-
+                <span class="text-sm font-medium">Keranjang Belanja</span>
                 <p class="font-bold text-gray-900 text-xl mt-0.5">
-                    <span id="menu-cart-count">{{ jumlah_keranjang }}</span>
-                    produk dipilih
+                    <span id="menu-cart-count">{{ jumlah_keranjang }}</span> produk dipilih
+                </p>
+                <p class="text-sm text-gray-600">Total
+                    <strong id="menu-cart-total" class="text-gray-900">{{ total_keranjang|rupiah }}</strong>
                 </p>
             </div>
-
-            <a href="{{ url_for('checkout') }}"
-            class="menu-cart-button bg-[#f5b841] text-gray-900 px-10 py-3.5 rounded-xl font-bold shadow-md hover:bg-yellow-500 transition text-lg">
-
-                Lihat Keranjang
-            </a>
-
+            <a href="{{ url_for('checkout') }}" class="menu-cart-button bg-[#f5b841] text-gray-900 px-10 py-3.5 rounded-xl font-bold shadow-md hover:bg-yellow-500 transition text-lg">Lihat Keranjang</a>
         </div>
     </div>
     <div id="menu-cart-feedback" class="menu-cart-feedback" role="status" aria-live="polite" hidden></div>
@@ -230,24 +139,36 @@
     <script>
         let categoryRequest;
         const cartCount = document.querySelector('#menu-cart-count');
+        const cartTotal = document.querySelector('#menu-cart-total');
         const cartFeedback = document.querySelector('#menu-cart-feedback');
         let cartFeedbackTimer;
+
+        const formatRupiah = (n) => 'Rp' + Number(n).toLocaleString('id-ID');
 
         function showCartFeedback(message, isError) {
             cartFeedback.textContent = message;
             cartFeedback.classList.toggle('is-error', isError);
             cartFeedback.hidden = false;
             window.clearTimeout(cartFeedbackTimer);
-            cartFeedbackTimer = window.setTimeout(() => {
-                cartFeedback.hidden = true;
-            }, 3000);
+            cartFeedbackTimer = window.setTimeout(() => { cartFeedback.hidden = true; }, 3000);
+        }
+
+        // Hitung ulang subtotal kartu: (harga + tambahan varian) x jumlah
+        // Jumlah awal 0, jadi subtotal awal Rp0 dan tombol tambah nonaktif.
+        function hitungSubtotal(card) {
+            const harga = Number(card.dataset.harga);
+            const select = card.querySelector('.js-varian');
+            const tambah = select && select.selectedOptions[0]
+                ? Number(select.selectedOptions[0].dataset.tambah || 0) : 0;
+            const jumlah = Number(card.querySelector('.js-jumlah').value);
+            card.querySelector('.js-subtotal').textContent = formatRupiah((harga + tambah) * jumlah);
+
+            const tombol = card.querySelector('button[type="submit"]');
+            if (tombol) tombol.disabled = jumlah < 1;
         }
 
         async function loadCategory(url, addHistoryEntry) {
-            if (categoryRequest) {
-                categoryRequest.abort();
-            }
-
+            if (categoryRequest) categoryRequest.abort();
             const controller = new AbortController();
             categoryRequest = controller;
             try {
@@ -255,61 +176,71 @@
                     signal: controller.signal,
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 });
-                if (!response.ok) {
-                    throw new Error(`Category request failed: ${response.status}`);
-                }
-
+                if (!response.ok) throw new Error(`Category request failed: ${response.status}`);
                 const page = new DOMParser().parseFromString(await response.text(), 'text/html');
                 const nextFilters = page.querySelector('#menu-category-filters');
                 const nextProducts = page.querySelector('#menu-product-grid');
-                if (!nextFilters || !nextProducts) {
-                    throw new Error('Category response is missing menu content.');
-                }
-
+                if (!nextFilters || !nextProducts) throw new Error('Category response is missing menu content.');
                 document.querySelector('#menu-category-filters').innerHTML = nextFilters.innerHTML;
                 document.querySelector('#menu-product-grid').innerHTML = nextProducts.innerHTML;
-                if (addHistoryEntry) {
-                    history.pushState({}, '', url);
-                }
+                if (addHistoryEntry) history.pushState({}, '', url);
             } catch (error) {
-                if (error.name === 'AbortError') {
-                    return;
-                }
+                if (error.name === 'AbortError') return;
                 console.error('Unable to load menu category.', error);
                 window.location.assign(url);
             } finally {
-                if (categoryRequest === controller) {
-                    categoryRequest = null;
-                }
+                if (categoryRequest === controller) categoryRequest = null;
             }
         }
 
         document.addEventListener('click', (event) => {
-            const link = event.target.closest('.category-link');
-            if (
-                !link
-                || event.button !== 0
-                || event.metaKey
-                || event.ctrlKey
-                || event.shiftKey
-                || event.altKey
-            ) {
+            // Tombol + / - jumlah (minimal 0)
+            const qtyBtn = event.target.closest('.js-plus, .js-minus');
+            if (qtyBtn) {
+                const card = qtyBtn.closest('.menu-card');
+                const input = card.querySelector('.js-jumlah');
+                const max = Number(input.max);
+                let nilai = Number(input.value) + (qtyBtn.classList.contains('js-plus') ? 1 : -1);
+                input.value = Math.min(Math.max(nilai, 0), max);
+                hitungSubtotal(card);
                 return;
             }
 
+            // Filter kategori tanpa reload
+            const link = event.target.closest('.category-link');
+            if (!link || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             event.preventDefault();
-            if (link.href !== window.location.href) {
-                loadCategory(link.href, true);
+            if (link.href !== window.location.href) loadCategory(link.href, true);
+        });
+
+        document.addEventListener('change', (event) => {
+            // Urutan harga
+            if (event.target.id === 'urut-menu') {
+                loadCategory(event.target.value, true);
+                return;
+            }
+            // Varian -> hitung ulang subtotal
+            if (event.target.classList.contains('js-varian')) {
+                hitungSubtotal(event.target.closest('.menu-card'));
             }
         });
 
         document.addEventListener('submit', async (event) => {
             const form = event.target.closest('#menu-product-grid form');
-            if (!form) {
+            if (!form) return;
+            event.preventDefault();
+
+            if (Number(form.querySelector('.js-jumlah').value) < 1) {
+                showCartFeedback('Pilih jumlah pesanan terlebih dahulu.', true);
                 return;
             }
 
-            event.preventDefault();
+            const select = form.querySelector('.js-varian');
+            if (select && !select.value) {
+                showCartFeedback('Silakan pilih varian terlebih dahulu.', true);
+                return;
+            }
+
             const button = form.querySelector('button[type="submit"]');
             button.disabled = true;
             try {
@@ -319,22 +250,26 @@
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 });
                 const result = await response.json();
-                if (!response.ok) {
-                    throw new Error(result.message || 'Produk gagal ditambahkan ke keranjang.');
-                }
-
+                if (!response.ok) throw new Error(result.message || 'Produk gagal ditambahkan ke keranjang.');
                 cartCount.textContent = result.jumlah_keranjang;
+                if (result.total_keranjang !== undefined) {
+                    cartTotal.textContent = formatRupiah(result.total_keranjang);
+                }
                 showCartFeedback(result.message, false);
+
+                // Kembalikan kartu ke kondisi awal (jumlah 0, varian belum dipilih)
+                form.querySelector('.js-jumlah').value = 0;
+                const pilihVarian = form.querySelector('.js-varian');
+                if (pilihVarian) pilihVarian.selectedIndex = 0;
+                hitungSubtotal(form.closest('.menu-card'));
             } catch (error) {
                 showCartFeedback(error.message, true);
             } finally {
-                button.disabled = false;
+                hitungSubtotal(form.closest('.menu-card'));
             }
         });
 
-        window.addEventListener('popstate', () => {
-            loadCategory(window.location.href, false);
-        });
+        window.addEventListener('popstate', () => loadCategory(window.location.href, false));
     </script>
 </body>
 </html>

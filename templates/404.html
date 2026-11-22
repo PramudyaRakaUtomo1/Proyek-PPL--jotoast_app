@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halaman Tidak Ditemukan - Jotoast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
+</head>
+<body class="checkout-page font-sans flex justify-center min-h-screen">
+    <div class="checkout-shell w-full min-h-screen relative">
+
+        <div class="checkout-header px-6 py-6 flex items-center gap-4">
+            <a href="{{ url_for('home') }}" class="btn-back">&larr; Beranda</a>
+            <h1 class="text-white text-2xl font-bold tracking-tight">Jotoast</h1>
+        </div>
+
+        <div class="page-container">
+            <div class="checkout-card bg-white rounded-2xl p-8 sm:p-12 text-center max-w-2xl mx-auto">
+                <p class="text-6xl font-extrabold text-[#f5b841]">404</p>
+                <h2 class="text-2xl font-bold text-gray-900 mt-3">Halaman tidak ditemukan</h2>
+                <p class="text-gray-500 mt-2">Alamat yang kamu buka tidak tersedia atau sudah dipindahkan.</p>
+                <a href="{{ url_for('menu_online') }}" class="checkout-submit inline-block mt-6 text-gray-900 px-6 py-3 rounded-xl font-bold shadow-lg">Lihat Menu</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

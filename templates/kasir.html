@@ -15,6 +15,7 @@
 
     <!-- BAGIAN KIRI: DAFTAR PRODUK -->
     <main class="cashier-main flex-1 p-6 lg:p-10 overflow-y-auto">
+        <a href="{{ url_for('home') }}" class="btn-back btn-back--light">&larr; Beranda</a>
 
         <div class="mb-8">
             <h1 class="cashier-title text-3xl font-extrabold text-gray-900">
@@ -25,76 +26,57 @@
             </p>
         </div>
 
-        <!-- PESAN FLASH -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for kategori_pesan, pesan in messages %}
-                {% if kategori_pesan in ['kasir_success', 'kasir_error'] %}
-                <div class="mb-5 p-4 rounded-xl
-                    {% if kategori_pesan == 'kasir_error' %}
-                        bg-red-100 text-red-700
-                    {% else %}
-                        bg-green-100 text-green-700
-                    {% endif %}">
-                    {{ pesan }}
-                </div>
-                {% endif %}
-            {% endfor %}
-        {% endwith %}
+        {% include '_notifications.html' %}
 
         <!-- FILTER KATEGORI -->
-        <div class="flex flex-wrap gap-3 mb-8">
+        <div class="cashier-toolbar mb-8">
+            <div class="cashier-category-filters" role="group" aria-label="Filter menu berdasarkan kategori">
+                <button type="button"
+                    data-kategori="semua"
+                    onclick="filterProduk(this.dataset.kategori, this)"
+                    class="filter-btn px-5 py-3 rounded-xl bg-[#f5b841] font-bold">
+                    Semua
+                </button>
 
-            <button type="button"
-                data-kategori="semua"
-                onclick="filterProduk(this.dataset.kategori, this)"
-                class="filter-btn px-5 py-3 rounded-xl bg-[#f5b841] font-bold">
-                Semua
-            </button>
-
-            {% for kat in kategori %}
+                {% for kat in kategori %}
                 <button type="button"
                     data-kategori="{{ kat.nama|lower|e }}"
                     onclick="filterProduk(this.dataset.kategori, this)"
                     class="filter-btn px-5 py-3 rounded-xl bg-white text-gray-700 font-semibold hover:bg-gray-50">
                     {{ kat.nama }}
                 </button>
-            {% endfor %}
+                {% endfor %}
+            </div>
 
-            <div class="ml-auto flex flex-wrap gap-3">
+            <div class="cashier-quick-links">
                 <a href="{{ url_for('riwayat_transaksi') }}"
-                    class="px-5 py-3 rounded-xl bg-white border border-gray-200 font-bold hover:bg-gray-50">
+                    class="cashier-quick-link px-5 py-3 rounded-xl bg-white border border-gray-200 font-bold hover:bg-gray-50">
                     Riwayat Transaksi
                 </a>
                 <a href="{{ url_for('pesanan_online') }}"
-                    class="px-5 py-3 rounded-xl bg-white border border-gray-200 font-bold hover:bg-gray-50">
+                    class="cashier-quick-link px-5 py-3 rounded-xl bg-white border border-gray-200 font-bold hover:bg-gray-50">
                     Pesanan Online
                 </a>
             </div>
-
         </div>
 
         <!-- DAFTAR PRODUK -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-
-            {% set tersedia = namespace(ada=false) %}
+        <div class="cashier-product-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
 
             {% for item in produk %}
-
-                {% if item.stok > 0 and item.status_ready %}
-
-                    {% set tersedia.ada = true %}
+                    {% set tersedia = item.stok > 0 and item.status_ready %}
 
                     <button type="button"
-                        class="produk-card cashier-card text-left bg-white p-5 rounded-2xl shadow-sm transition border border-transparent hover:border-[#f5b841]"
+                        class="produk-card cashier-card text-left bg-white p-5 rounded-2xl shadow-sm transition border border-transparent {% if tersedia %}hover:border-[#f5b841]{% else %}cashier-card--unavailable{% endif %}"
                         data-id="{{ item.id }}"
                         data-nama="{{ item.nama|e }}"
                         data-harga="{{ item.harga }}"
                         data-kategori="{{ item.kategori_rel.nama|lower|e }}"
                         data-stok="{{ item.stok }}"
-                        onclick="tambahProduk(this)">
+                        {% if tersedia %}onclick="tambahProduk(this)"{% else %}disabled aria-label="{{ item.nama }} - menu habis"{% endif %}>
 
                         <!-- GAMBAR PRODUK -->
-                        <div class="w-full h-40 bg-[#efede8] rounded-xl mb-4 overflow-hidden relative">
+                        <div class="cashier-product-image w-full h-40 bg-[#efede8] rounded-xl mb-4 overflow-hidden relative">
 
                             {% if item.gambar %}
                                 <img
@@ -161,6 +143,12 @@
 
                             {% endif %}
 
+                            {% if not tersedia %}
+                            <span class="absolute top-3 right-3 rounded-full bg-gray-900/80 px-3 py-1 text-xs font-bold text-white">
+                                Habis
+                            </span>
+                            {% endif %}
+
                         </div>
 
                         <!-- INFORMASI PRODUK -->
@@ -176,24 +164,25 @@
                             Stok: {{ item.stok }}
                         </p>
 
-                        <p class="text-xs text-[#b47b17] font-semibold mt-3">
-                            + Tambahkan ke keranjang
-                        </p>
+                        {% if tersedia %}
+                            <p class="text-xs text-[#b47b17] font-semibold mt-3">
+                                + Tambahkan ke keranjang
+                            </p>
+                        {% else %}
+                            <p class="text-xs text-red-600 font-semibold mt-3">
+                                Menu habis
+                            </p>
+                        {% endif %}
 
                     </button>
-
-                {% endif %}
-
-            {% endfor %}
-
-            {% if not tersedia.ada %}
+            {% else %}
                 <div class="col-span-full text-center bg-white rounded-2xl p-10">
                     <div class="text-5xl mb-3">🍞</div>
                     <p class="text-gray-500 font-semibold">
-                        Belum ada produk yang tersedia.
+                    Belum ada menu yang terdaftar.
                     </p>
                 </div>
-            {% endif %}
+            {% endfor %}
 
         </div>
 
@@ -254,6 +243,10 @@
             <!-- FORM PEMBAYARAN -->
             <form action="{{ url_for('proses_transaksi') }}"
                 method="POST"
+                data-confirm="Pastikan pembayaran sudah benar sebelum menyimpan transaksi."
+                data-confirm-title="Simpan transaksi?"
+                data-confirm-accept="Ya, simpan"
+                data-confirm-loading="Menyimpan Transaksi..."
                 onsubmit="return validasiTransaksi()">
 
                 <input type="hidden"
@@ -404,7 +397,7 @@ function tambahProduk(button) {
     if (produk) {
 
         if (produk.jumlah >= stok) {
-            alert("Jumlah produk melebihi stok tersedia.");
+            JotoastNotifications.show("Jumlah produk melebihi stok tersedia.", "error");
             return;
         }
 
@@ -413,7 +406,7 @@ function tambahProduk(button) {
     } else {
 
         if (stok <= 0) {
-            alert("Stok produk habis.");
+            JotoastNotifications.show("Stok produk habis.", "error");
             return;
         }
 
@@ -554,7 +547,7 @@ function ubahJumlah(index, perubahan) {
 
     } else if (jumlahBaru > stok) {
 
-        alert("Jumlah melebihi stok tersedia.");
+        JotoastNotifications.show("Jumlah melebihi stok tersedia.", "error");
         return;
 
     } else {
@@ -583,17 +576,24 @@ function hapusProduk(index) {
 // KOSONGKAN KERANJANG
 // ======================================
 
-function kosongkanKeranjang() {
+async function kosongkanKeranjang() {
 
     if (keranjang.length === 0) return;
 
-    if (confirm("Yakin ingin mengosongkan keranjang?")) {
+    const konfirmasi = await JotoastNotifications.confirm(
+        "Semua produk yang dipilih akan dihapus dari transaksi ini.",
+        {
+            heading: "Kosongkan keranjang?",
+            acceptText: "Ya, kosongkan",
+            danger: true
+        }
+    );
 
-        keranjang = [];
+    if (!konfirmasi) return;
 
-        tampilkanKeranjang();
+    keranjang = [];
 
-    }
+    tampilkanKeranjang();
 
 }
 
@@ -717,7 +717,7 @@ function validasiTransaksi() {
 
     if (keranjang.length === 0) {
 
-        alert("Silakan pilih produk terlebih dahulu.");
+        JotoastNotifications.show("Silakan pilih produk terlebih dahulu.", "error");
 
         return false;
 
@@ -737,7 +737,7 @@ function validasiTransaksi() {
 
     if (metode === "Tunai" && uang < total) {
 
-        alert("Uang yang diterima masih kurang.");
+        JotoastNotifications.show("Uang yang diterima masih kurang.", "error");
 
         return false;
 
@@ -750,7 +750,7 @@ function validasiTransaksi() {
 
         if (item.jumlah > stok || stok <= 0) {
 
-            alert("Stok " + item.nama + " tidak mencukupi.");
+            JotoastNotifications.show("Stok " + item.nama + " tidak mencukupi.", "error");
 
             return false;
 
@@ -761,21 +761,7 @@ function validasiTransaksi() {
     document.getElementById("items_json").value =
         JSON.stringify(keranjang);
 
-    const konfirmasi = confirm(
-        "Apakah pembayaran sudah benar dan ingin menyimpan transaksi?"
-    );
-
-    if (konfirmasi) {
-
-        const tombol = document.getElementById("tombol-bayar");
-
-        tombol.disabled = true;
-        tombol.textContent = "Menyimpan Transaksi...";
-        tombol.classList.add("opacity-60", "cursor-not-allowed");
-
-    }
-
-    return konfirmasi;
+    return true;
 }
 
 

@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Kategori - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
@@ -18,11 +19,20 @@
                 <a href="{{ url_for('kelola_produk') }}" class="admin-nav-link">
                     <span aria-hidden="true">▦</span> Produk
                 </a>
-                <a href="{{ url_for('kelola_kategori') }}" class="admin-nav-link is-active">
+                <a href="{{ url_for('kelola_kategori') }}" class="admin-nav-link is-active" aria-current="page">
                     <span aria-hidden="true">◫</span> Kategori
                 </a>
                 <a href="{{ url_for('riwayat_transaksi') }}" class="admin-nav-link">
                     <span aria-hidden="true">▤</span> Transaksi
+                </a>
+                <a href="{{ url_for('admin_diagram') }}" class="admin-nav-link">
+                    <span aria-hidden="true">▥</span> Diagram
+                </a>
+                <a href="{{ url_for('admin_pendapatan') }}" class="admin-nav-link">
+                    <span aria-hidden="true">Rp</span> Pendapatan &amp; Laba
+                </a>
+                <a href="{{ url_for('admin_laporan_penjualan') }}" class="admin-nav-link">
+                    <span aria-hidden="true">▧</span> Laporan Penjualan
                 </a>
             </nav>
             <div class="admin-sidebar-footer">
@@ -39,7 +49,6 @@
                         <p class="admin-eyebrow">Pengaturan menu</p>
                         <h1 class="admin-title">Kelola Kategori</h1>
                     </div>
-                    <a href="{{ url_for('kelola_produk') }}" class="admin-add-button admin-add-secondary">Lihat Produk</a>
                 </div>
 
                 <div class="admin-category-layout">
@@ -57,7 +66,7 @@
 
                     <section class="admin-panel admin-table-panel">
                         <div class="admin-table-scroll">
-                            <table class="admin-product-table w-full text-left border-collapse">
+                            <table class="admin-product-table admin-category-table w-full text-left border-collapse">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -72,7 +81,12 @@
                                         <td><span class="admin-product-name">{{ item.nama }}</span></td>
                                         <td>
                                             <div class="admin-actions">
-                                                <a href="{{ url_for('hapus_kategori', id=item.id) }}" onclick="return confirm('Hapus kategori ini?')" class="admin-action-delete">Hapus</a>
+                                                <a href="{{ url_for('hapus_kategori', id=item.id) }}"
+                                                   data-confirm="Hapus kategori ini?"
+                                                   data-confirm-title="Hapus kategori?"
+                                                   data-confirm-accept="Ya, hapus"
+                                                   data-confirm-tone="danger"
+                                                   class="admin-action-delete">Hapus</a>
                                             </div>
                                         </td>
                                     </tr>
@@ -84,7 +98,7 @@
                         </div>
                     </section>
                 </div>
-                <a href="/" class="admin-back-link"><span aria-hidden="true">←</span> Kembali ke toko</a>
+                <a href="/" class="admin-back-link admin-category-back"><span aria-hidden="true">←</span> Kembali ke toko</a>
             </div>
         </main>
     </div>

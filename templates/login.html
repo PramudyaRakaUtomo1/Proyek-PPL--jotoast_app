@@ -2,26 +2,23 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Pegawai - Jotoast</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
 </head>
 <body class="login-page">
+    {% include '_notifications.html' %}
+    <header class="menu-header flex justify-between items-center w-full">
+        <div>
+            <h1 class="text-[#f5b841] text-3xl font-bold tracking-tight">Jotoast</h1>
+            <p class="text-gray-300 text-sm mt-1">Pesan ricebowl, tost, dan kopi</p>
+        </div>
+    </header>
     <main class="login-shell">
-        <section class="login-brand-panel" aria-label="Jotoast">
-            <a href="/" class="login-back">&larr; Kembali ke Beranda</a>
-            <div class="login-brand-copy">
-                <h1>JOTOAST</h1>
-                <p>Ricebowl, tost, dan kopi</p>
-            </div>
-        </section>
-
         <section class="login-form-panel">
             <div class="login-form-content">
                 <h2>Masuk</h2>
-                {% if error %}
-                <p class="login-error" role="alert">{{ error }}</p>
-                {% endif %}
                 <form action="{{ url_for('login') }}" method="POST" class="login-form">
                     <fieldset class="login-role-options" aria-label="Pilih jenis akun">
                         <legend class="sr-only">Masuk sebagai</legend>
@@ -45,6 +42,7 @@
                     </div>
                     <button type="submit" class="login-submit">Masuk</button>
                 </form>
+                <a href="/" class="login-back">&larr; Kembali ke Beranda</a>
             </div>
         </section>
     </main>

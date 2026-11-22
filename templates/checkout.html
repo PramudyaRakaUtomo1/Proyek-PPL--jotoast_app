@@ -8,82 +8,101 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
 </head>
 <body class="checkout-page font-sans flex justify-center min-h-screen">
-    <div class="checkout-shell w-full max-w-md min-h-screen relative shadow-xl">
+    <div class="checkout-shell w-full min-h-screen relative">
 
-        <!-- Header dengan Tombol Kembali -->
         <div class="checkout-header px-6 py-6 flex items-center gap-4">
-            <a href="/" class="text-white bg-gray-700 px-4 py-2 rounded-lg hover:bg-gray-600 transition font-bold text-sm">
-                &larr; Tambah Menu
-            </a>
             <h1 class="text-white text-2xl font-bold tracking-tight">Keranjang</h1>
         </div>
 
-        <div class="p-6 space-y-6">
+        <div class="page-container space-y-6">
 
-            <!-- Pesan error -->
-            {% with pesan = get_flashed_messages(with_categories=true) %}
-                {% for kategori_pesan, isi in pesan %}
-                    <div class="px-4 py-3 rounded-xl text-sm font-semibold
-                        {% if kategori_pesan == 'sukses' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-700{% endif %}">
-                        {{ isi }}
-                    </div>
-                {% endfor %}
-            {% endwith %}
+            {% include '_notifications.html' %}
 
             {% if items %}
-                <!-- Daftar item di keranjang -->
-                <div class="checkout-card bg-white rounded-2xl shadow-sm divide-y divide-gray-100">
-                    {% for item in items %}
-                    <div class="p-4">
-                        <div class="flex justify-between items-start gap-3">
-                            <div>
-                                <p class="font-bold text-gray-900">{{ item.produk.nama }}</p>
-                                <p class="text-sm text-gray-500">{{ item.produk.harga|rupiah }} / porsi</p>
-                            </div>
-                            <form action="/keranjang/hapus/{{ item.produk.id }}" method="POST">
-                                <button type="submit" class="text-xs text-red-600 font-semibold hover:underline">Hapus</button>
-                            </form>
-                        </div>
-
-                        <div class="flex justify-between items-center mt-3">
-                            <div class="flex items-center gap-3">
-                                <form action="/keranjang/kurang/{{ item.produk.id }}" method="POST">
-                                    <button type="submit" class="w-8 h-8 rounded-lg bg-[#f4f3f0] border border-gray-300 font-bold hover:bg-gray-200">&minus;</button>
-                                </form>
-                                <span class="font-bold w-5 text-center">{{ item.jumlah }}</span>
-                                <form action="/keranjang/tambah/{{ item.produk.id }}" method="POST">
-                                    <button type="submit" class="w-8 h-8 rounded-lg bg-[#f4f3f0] border border-gray-300 font-bold hover:bg-gray-200">+</button>
+            <div class="checkout-grid">
+                <!-- Daftar item -->
+                <div class="checkout-items-column">
+                    <a href="{{ url_for('menu_online') }}" class="btn-back btn-back--light">&larr; Lihat Menu</a>
+                    <div class="checkout-card bg-white rounded-2xl shadow-sm divide-y divide-gray-100">
+                        {% for item in items %}
+                        <div class="p-4">
+                            <div class="flex justify-between items-start gap-3">
+                                <div>
+                                    <p class="font-bold text-gray-900">{{ item.produk.nama }}</p>
+                                    {% if item.varian %}
+                                    <p class="text-sm font-semibold text-[#b57a14]">Varian: {{ item.varian.nama }}</p>
+                                    {% endif %}
+                                    <p class="text-sm text-gray-500">{{ item.harga_satuan|rupiah }} / porsi</p>
+                                </div>
+                                <form action="{{ url_for('hapus_keranjang', kunci=item.kunci) }}" method="POST">
+                                    <button type="submit" class="text-xs text-red-600 font-semibold hover:underline">Hapus</button>
                                 </form>
                             </div>
-                            <p class="font-bold text-gray-900">{{ item.subtotal|rupiah }}</p>
-                        </div>
-                    </div>
-                    {% endfor %}
 
-                    <div class="p-4 flex justify-between items-center bg-gray-50 rounded-b-xl">
-                        <span class="font-semibold text-gray-700">Total</span>
-                        <span class="text-xl font-extrabold text-gray-900">{{ total|rupiah }}</span>
+                            <div class="flex justify-between items-center mt-3">
+                                <div class="flex items-center gap-3">
+                                    <form action="{{ url_for('kurang_keranjang', kunci=item.kunci) }}" method="POST">
+                                        <button type="submit" class="w-10 h-10 rounded-lg bg-[#f4f3f0] border border-gray-300 font-bold hover:bg-gray-200">&minus;</button>
+                                    </form>
+                                    <span class="font-bold w-5 text-center">{{ item.jumlah }}</span>
+                                    <form action="{{ url_for('tambah_keranjang', produk_id=item.produk.id) }}" method="POST">
+                                        <input type="hidden" name="varian_id" value="{{ item.varian.id if item.varian else 0 }}">
+                                        <input type="hidden" name="jumlah" value="1">
+                                        <button type="submit" class="w-10 h-10 rounded-lg bg-[#f4f3f0] border border-gray-300 font-bold hover:bg-gray-200">+</button>
+                                    </form>
+                                </div>
+                                <p class="font-bold text-gray-900">{{ item.subtotal|rupiah }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="p-4 flex justify-between items-center bg-gray-50 rounded-b-xl">
+                            <span class="font-semibold text-gray-700">Total</span>
+                            <span class="text-xl font-extrabold text-gray-900">{{ total|rupiah }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Form Checkout -->
-                <form action="/checkout" method="POST" class="checkout-card p-5 sm:p-6 rounded-2xl space-y-5">
+                <!-- Form checkout -->
+                <form action="{{ url_for('checkout') }}" method="POST" class="checkout-card checkout-sticky p-5 sm:p-6 rounded-2xl space-y-5">
+
+                    <!-- Data pemesan -->
                     <div>
-                        <label class="block text-gray-800 font-semibold mb-2">Nama Pemesan</label>
-                        <input type="text" name="nama_pemesan" required placeholder="Misal: Budi" class="w-full p-4 border border-gray-300 rounded-xl focus:border-[#f5b841]">
+                        <label for="nama_pemesan" class="block text-gray-800 font-semibold mb-2">Nama Pemesan</label>
+                        <input type="text" id="nama_pemesan" name="nama_pemesan" required maxlength="100"
+                               placeholder="Tuliskan nama Anda"
+                               class="w-full p-4 border border-gray-300 rounded-xl focus:border-[#f5b841]">
+                        <p class="text-xs text-gray-500 mt-2">Nama ini akan disebut saat kamu mengambil pesanan di outlet.</p>
                     </div>
+
+                    <!-- Metode pembayaran -->
                     <div>
-                        <label class="block text-gray-800 font-semibold mb-2">Metode Pembayaran</label>
-                        <select name="metode_bayar" class="w-full p-4 border border-gray-300 rounded-xl focus:border-[#f5b841]">
-                            <option value="Tunai di Kasir">Bayar di Kasir</option>
-                        </select>
+                        <span class="block text-gray-800 font-semibold mb-2">Metode Pembayaran</span>
+                        <div class="space-y-3">
+                            <label class="block cursor-pointer">
+                                <input type="radio" name="metode_bayar" value="Tunai" class="peer sr-only" required checked>
+                                <div class="p-4 rounded-xl border border-gray-300 bg-white peer-checked:border-[#f5b841] peer-checked:bg-[#fff8e6] peer-checked:ring-2 peer-checked:ring-[#f5b841]/40">
+                                    <p class="font-bold text-gray-900">Tunai</p>
+                                    <p class="text-sm text-gray-500">Pesanan langsung diproses. Bayar tunai saat mengambil pesanan di outlet.</p>
+                                </div>
+                            </label>
+                            <label class="block cursor-pointer">
+                                <input type="radio" name="metode_bayar" value="QRIS" class="peer sr-only">
+                                <div class="p-4 rounded-xl border border-gray-300 bg-white peer-checked:border-[#f5b841] peer-checked:bg-[#fff8e6] peer-checked:ring-2 peer-checked:ring-[#f5b841]/40">
+                                    <p class="font-bold text-gray-900">Non-tunai (QRIS)</p>
+                                    <p class="text-sm text-gray-500">Lanjutkan pembayaran melalui QR setelah checkout.</p>
+                                </div>
+                            </label>
+                        </div>
                     </div>
-                    <button type="submit" class="checkout-submit w-full mt-4 text-gray-900 px-6 py-4 rounded-xl font-bold shadow-lg transition text-lg">Buat Pesanan</button>
+
+                    <button type="submit" class="checkout-submit w-full mt-2 text-gray-900 px-6 py-4 rounded-xl font-bold shadow-lg transition text-lg">Buat Pesanan</button>
                 </form>
+            </div>
             {% else %}
                 <div class="checkout-card bg-white rounded-2xl shadow-sm p-8 text-center">
                     <p class="text-gray-700 font-semibold">Keranjang kamu masih kosong.</p>
-                    <a href="/" class="inline-block mt-4 bg-[#1a1714] text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition">Lihat Menu</a>
+                    <a href="{{ url_for('menu_online') }}" class="inline-block mt-4 bg-[#1a1714] text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition">Lihat Menu</a>
                 </div>
             {% endif %}
         </div>

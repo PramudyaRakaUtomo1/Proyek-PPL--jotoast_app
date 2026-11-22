@@ -22,6 +22,17 @@
                 <a href="{{ url_for('riwayat_transaksi') }}" class="admin-nav-link is-active">
                     <span aria-hidden="true">▤</span> Transaksi
                 </a>
+                {% if role == 'owner' %}
+                <a href="{{ url_for('admin_diagram') }}" class="admin-nav-link">
+                    <span aria-hidden="true">▥</span> Diagram
+                </a>
+                <a href="{{ url_for('admin_pendapatan') }}" class="admin-nav-link">
+                    <span aria-hidden="true">Rp</span> Pendapatan &amp; Laba
+                </a>
+                <a href="{{ url_for('admin_laporan_penjualan') }}" class="admin-nav-link">
+                    <span aria-hidden="true">▧</span> Laporan Penjualan
+                </a>
+                {% endif %}
             </nav>
             <div class="admin-sidebar-footer">
                 <span class="admin-avatar" aria-hidden="true">J</span>
@@ -39,11 +50,6 @@
                         <p class="admin-eyebrow">Penjualan</p>
                         <h1 class="admin-title">Riwayat Transaksi</h1>
                     </div>
-                    {% if role == 'kasir' %}
-                    <a href="{{ url_for('kasir') }}" class="admin-add-button admin-add-secondary">Kembali ke Kasir</a>
-                    {% else %}
-                    <a href="{{ url_for('menu_online') }}" class="admin-add-button admin-add-secondary">Kembali ke Toko</a>
-                    {% endif %}
                 </div>
 
                 <div class="transaction-summary">
@@ -52,13 +58,23 @@
                         <strong>{{ transaksi|length }}</strong>
                     </div>
                     <div class="admin-panel transaction-summary-card">
-                        <span>Total penjualan</span>
-                        <strong>{{ transaksi|sum(attribute='total_harga')|rupiah }}</strong>
+                        <span>Total penjualan lunas</span>
+                        <strong>{{ total_penjualan_lunas|rupiah }}</strong>
+                    </div>
+                    <div class="admin-panel transaction-summary-card transaction-top-product">
+                        <span>Produk terlaris</span>
+                        {% if produk_terlaris %}
+                        <strong>{{ produk_terlaris.nama_produk }}</strong>
+                        <small>{{ produk_terlaris.jumlah_terjual }} terjual &middot; gabungan semua varian dari transaksi lunas</small>
+                        {% else %}
+                        <strong>Belum ada data</strong>
+                        <small>Produk terjual akan tampil setelah transaksi lunas.</small>
+                        {% endif %}
                     </div>
                 </div>
 
                 <section class="admin-panel admin-table-panel">
-                    <div class="admin-table-scroll">
+                    <div class="admin-table-scroll transaction-history-scroll">
                         <table class="admin-product-table transaction-history-table w-full text-left border-collapse">
                             <thead>
                                 <tr>
@@ -92,10 +108,23 @@
                                         <span class="admin-muted">Tidak ada detail</span>
                                         {% endfor %}
                                     </td>
-                                    <td>{{ item.metode_bayar }}</td>
+                                    <td class="transaction-payment">
+                                        <span class="transaction-payment-method">
+                                            {{ item.tipe_pembayaran or item.metode_bayar }}
+                                        </span>
+                                        <span class="admin-muted transaction-payment-details">
+                                            {{ item.metode_bayar }} &middot; {{ item.status_pembayaran }}
+                                            {% if item.uang_diterima is not none %}
+                                            <br>Diterima {{ item.uang_diterima|rupiah }} &middot; Kembali {{ (item.kembalian or 0)|rupiah }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
                                     <td>
-                                        <span class="admin-status {% if item.status == 'Selesai' %}is-ready{% else %}is-empty{% endif %}">
-                                            {{ item.status }}
+                                        <span class="admin-status transaction-status
+                                            {% if item.status == 'Siap Diambil' or item.status == 'Selesai' %}is-ready
+                                            {% elif item.status == 'Diproses' %}is-processing
+                                            {% else %}is-pending{% endif %}">
+                                            {{ item.status or 'Tidak diketahui' }}
                                         </span>
                                     </td>
                                     <td class="admin-product-price text-right">{{ item.total_harga|rupiah }}</td>
@@ -109,8 +138,11 @@
                         </table>
                     </div>
                 </section>
-                {% if role == 'kasir' %}
-                {% endif %}
+                <div class="transaction-history-actions">
+                    <a href="{{ url_for('home') }}" class="admin-back-link">
+                        <span aria-hidden="true">←</span> Kembali ke Beranda
+                    </a>
+                </div>
     {% if role == 'owner' %}
             </div>
         </main>

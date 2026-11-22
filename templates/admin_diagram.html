@@ -1,0 +1,185 @@
+{% macro render_chart(title, description, rows) %}
+<section class="admin-panel admin-chart-card">
+    <div class="admin-chart-heading">
+        <h2>{{ title }}</h2>
+        <p>{{ description }}</p>
+    </div>
+    {% if rows %}
+    <ol class="admin-chart-list">
+        {% for row in rows %}
+        <li class="admin-chart-row">
+            <div class="admin-chart-row-label">
+                <span>{{ row.label }}</span>
+                <strong>{{ row.label_nilai }}</strong>
+            </div>
+            <div class="admin-chart-track" aria-hidden="true">
+                <span style="width: {{ row.persentase }}%;"></span>
+            </div>
+        </li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    <p class="admin-chart-empty">Belum ada data untuk ditampilkan.</p>
+    {% endif %}
+</section>
+{% endmacro %}
+
+{% macro render_donut_chart(title, description, rows, total) %}
+<section class="admin-panel admin-chart-card admin-donut-card">
+    <div class="admin-chart-heading">
+        <h2>{{ title }}</h2>
+        <p>{{ description }}</p>
+    </div>
+    {% if rows and total %}
+    <div class="admin-donut-layout">
+        <div class="admin-donut" role="img" aria-label="{{ title }}: {{ total }} transaksi">
+            <div class="admin-donut-hole">
+                <strong>{{ total }}</strong>
+                <span>transaksi</span>
+            </div>
+            <div class="admin-donut-gradient" style="background: conic-gradient(
+                {% for row in rows %}
+                var(--chart-color-{{ loop.index }}) {{ row.sudut_mulai }}% {{ row.sudut_akhir }}%{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            );"></div>
+        </div>
+        <ul class="admin-donut-legend">
+            {% for row in rows %}
+            <li>
+                <span class="admin-donut-key" style="background: var(--chart-color-{{ loop.index }});"></span>
+                <span class="admin-donut-label">{{ row.label }}</span>
+                <strong>{{ row.label_nilai }}</strong>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <p class="admin-chart-empty">Belum ada data untuk ditampilkan.</p>
+    {% endif %}
+</section>
+{% endmacro %}
+
+{% macro render_bar_chart(title, description, rows) %}
+<section class="admin-panel admin-chart-card admin-sales-chart">
+    <div class="admin-chart-heading">
+        <h2>{{ title }}</h2>
+        <p>{{ description }}</p>
+    </div>
+    {% if rows %}
+    <ol class="admin-sales-bars" aria-label="{{ title }}">
+        {% for row in rows %}
+        <li>
+            <strong class="admin-sales-bar-value">{{ row.label_nilai }}</strong>
+            <div class="admin-sales-bar-holder" aria-hidden="true">
+                <span class="admin-sales-bar" style="height: {{ row.persentase }}%;"></span>
+            </div>
+            <span class="admin-sales-bar-label">{{ row.label }}</span>
+        </li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    <p class="admin-chart-empty">Belum ada data untuk ditampilkan.</p>
+    {% endif %}
+</section>
+{% endmacro %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagram & Statistik - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
+</head>
+<body class="admin-page font-sans min-h-screen">
+    {% include '_admin_toasts.html' %}
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <a href="{{ url_for('kelola_produk') }}" class="admin-brand">Jotoast</a>
+            <p class="admin-nav-label">Manajemen</p>
+            <nav class="admin-nav" aria-label="Navigasi admin">
+                <a href="{{ url_for('kelola_produk') }}" class="admin-nav-link">
+                    <span aria-hidden="true">▦</span> Produk
+                </a>
+                <a href="{{ url_for('kelola_kategori') }}" class="admin-nav-link">
+                    <span aria-hidden="true">◫</span> Kategori
+                </a>
+                <a href="{{ url_for('riwayat_transaksi') }}" class="admin-nav-link">
+                    <span aria-hidden="true">▤</span> Transaksi
+                </a>
+                <a href="{{ url_for('admin_diagram') }}" class="admin-nav-link is-active" aria-current="page">
+                    <span aria-hidden="true">▥</span> Diagram
+                </a>
+                <a href="{{ url_for('admin_pendapatan') }}" class="admin-nav-link">
+                    <span aria-hidden="true">Rp</span> Pendapatan &amp; Laba
+                </a>
+                <a href="{{ url_for('admin_laporan_penjualan') }}" class="admin-nav-link">
+                    <span aria-hidden="true">▧</span> Laporan Penjualan
+                </a>
+            </nav>
+            <div class="admin-sidebar-footer">
+                <span class="admin-avatar" aria-hidden="true">J</span>
+                <span class="admin-account-label">Admin Jotoast</span>
+                <a href="{{ url_for('logout') }}" class="admin-logout" aria-label="Keluar" title="Keluar">↗</a>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-content p-5 sm:p-8 lg:p-10">
+                <div class="admin-heading">
+                    <div>
+                        <p class="admin-eyebrow">Ringkasan usaha</p>
+                        <h1 class="admin-title">Diagram &amp; Statistik</h1>
+                    </div>
+                </div>
+
+                <div class="admin-diagram-summary">
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Total transaksi</span>
+                        <strong>{{ total_transaksi }}</strong>
+                    </div>
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Total penjualan lunas</span>
+                        <strong>{{ total_penjualan_lunas|rupiah }}</strong>
+                    </div>
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Total produk</span>
+                        <strong>{{ total_produk }}</strong>
+                    </div>
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Total kategori</span>
+                        <strong>{{ total_kategori }}</strong>
+                    </div>
+                </div>
+
+                <div class="admin-chart-grid">
+                    {{ render_bar_chart(
+                        'Penjualan 7 Hari Terakhir',
+                        'Nilai transaksi lunas per hari.',
+                        diagram_penjualan
+                    ) }}
+                    {{ render_donut_chart(
+                        'Status Pembayaran',
+                        'Jumlah transaksi pada setiap status pembayaran.',
+                        diagram_status_pembayaran,
+                        total_diagram_status
+                    ) }}
+                    {{ render_chart(
+                        'Produk per Kategori',
+                        'Jumlah produk yang terdaftar pada setiap kategori.',
+                        diagram_produk_kategori
+                    ) }}
+                    {{ render_chart(
+                        'Sumber Transaksi',
+                        'Perbandingan transaksi dari kasir dan toko online.',
+                        diagram_sumber_transaksi
+                    ) }}
+                </div>
+                <a href="{{ url_for('home') }}" class="admin-back-link">
+                    <span aria-hidden="true">←</span> Kembali ke Beranda
+                </a>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -2,9 +2,9 @@ from app import app, db, Kategori, Produk
 
 with app.app_context():
     # 1. Tambahkan Kategori
-    kat_ricebowl = Kategori(nama='Ricebowl')
-    kat_tost = Kategori(nama='Tost')
-    kat_kopi = Kategori(nama='Kopi')
+    kat_ricebowl = Kategori(nama='Rice Bowl')
+    kat_tost = Kategori(nama='Toast')
+    kat_kopi = Kategori(nama='Coffee')
     
     db.session.add_all([kat_ricebowl, kat_tost, kat_kopi])
     db.session.commit()

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Pesanan {{ transaksi.kode_pesanan }} - Jotoast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
+</head>
+<body class="checkout-page font-sans flex justify-center min-h-screen">
+    <div class="checkout-shell w-full min-h-screen relative">
+
+        <div class="checkout-header px-6 py-6 flex items-center gap-4">
+            <h1 class="text-white text-2xl font-bold tracking-tight">Status Pesanan</h1>
+        </div>
+
+        <div class="page-container space-y-6">
+
+            {% include '_notifications.html' %}
+
+            <div class="status-layout">
+                <a href="{{ url_for('home') }}" class="btn-back btn-back--light">&larr; Beranda</a>
+                <div class="checkout-grid">
+
+                <!-- Kolom kiri: kode, pesan status, tahapan -->
+                <div class="space-y-6">
+
+                    <div class="checkout-card bg-white rounded-2xl p-5">
+                        <p class="text-xs font-bold uppercase tracking-wider text-gray-500">Kode Pesanan</p>
+                        <div class="flex items-center justify-between gap-3 flex-wrap">
+                            <p class="text-3xl font-extrabold tracking-wider text-gray-900" id="kode-pesanan">{{ transaksi.kode_pesanan }}</p>
+                            <button type="button" id="salin-kode"
+                                    class="min-h-[44px] px-4 rounded-xl border border-gray-300 bg-white text-sm font-bold text-gray-800 hover:bg-gray-50">Salin Kode</button>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-3">Atas nama
+                            <strong class="text-gray-900 break-words">{{ transaksi.nama_pemesan }}</strong>
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1">Simpan kode ini untuk memantau pesanan. Sebutkan nama saat mengambil di outlet.</p>
+                    </div>
+
+                    <div class="rounded-2xl px-5 py-4 font-semibold
+                        {% if transaksi.status == 'Siap Diambil' %}bg-green-100 text-green-800
+                        {% elif transaksi.status == 'Selesai' %}bg-gray-100 text-gray-700
+                        {% else %}bg-[#fff6dd] text-[#6b4a0d]{% endif %}">
+                        {% if transaksi.status == 'Menunggu Pembayaran' %}
+                            {% if transaksi.status_pembayaran == 'Menunggu Verifikasi' %}
+                                Pembayaran QRIS kamu sedang diverifikasi kasir.
+                            {% else %}
+                                Selesaikan pembayaran QRIS agar pesanan bisa diproses.
+                            {% endif %}
+                        {% elif transaksi.status == 'Diproses' %}
+                            Pesananmu sedang dibuat.
+                            {% if transaksi.metode_bayar == 'Tunai' %}Bayar tunai saat kamu mengambil pesanan di outlet.{% endif %}
+                        {% elif transaksi.status == 'Siap Diambil' %}
+                            Pesananmu sudah siap! Ambil di outlet atas nama {{ transaksi.nama_pemesan }}.
+                            {% if transaksi.metode_bayar == 'Tunai' and transaksi.status_pembayaran != 'Lunas' %}Silakan bayar tunai di kasir.{% endif %}
+                        {% else %}Pesanan selesai. Terima kasih sudah memesan di Jotoast!{% endif %}
+                    </div>
+
+                    {% if transaksi.metode_bayar == 'QRIS' and transaksi.status_pembayaran in ['Belum Dibayar', 'Menunggu Verifikasi'] %}
+                    <a href="{{ url_for('bayar_qris', kode=transaksi.kode_pesanan) }}" class="checkout-submit block text-center w-full text-gray-900 px-6 py-4 rounded-xl font-bold shadow-lg">
+                        {% if transaksi.status_pembayaran == 'Menunggu Verifikasi' %}Lihat / Ganti Bukti Pembayaran{% else %}Bayar dengan QRIS{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <div class="checkout-card bg-white rounded-2xl p-5">
+                        <ol class="space-y-4">
+                            {% for nama in langkah %}
+                            {% set selesai = transaksi.status == 'Selesai' %}
+                            {% set sudah = selesai or loop.index0 < indeks_status %}
+                            {% set sekarang = (not selesai) and loop.index0 == indeks_status %}
+                            <li class="flex items-center gap-3">
+                                <span class="grid place-items-center shrink-0 w-8 h-8 rounded-full text-sm font-extrabold
+                                    {% if sudah %}bg-green-500 text-white{% elif sekarang %}bg-[#f5b841] text-gray-900 ring-4 ring-[#f5b841]/30{% else %}bg-gray-200 text-gray-500{% endif %}">
+                                    {% if sudah %}&#10003;{% else %}{{ loop.index }}{% endif %}
+                                </span>
+                                <span class="{% if sekarang %}font-extrabold text-gray-900{% elif sudah %}font-semibold text-gray-700{% else %}text-gray-400{% endif %}">{{ nama }}</span>
+                            </li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Kolom kanan: rincian pesanan -->
+                <div class="checkout-card checkout-sticky bg-white rounded-2xl divide-y divide-gray-100">
+                    {% for d in detail %}
+                    <div class="p-4 flex justify-between gap-3">
+                        <div>
+                            <p class="font-bold text-gray-900">{{ d.nama_produk }} &times; {{ d.jumlah }}</p>
+                            {% if d.varian %}<p class="text-sm text-[#b57a14] font-semibold">Varian: {{ d.varian }}</p>{% endif %}
+                        </div>
+                        <p class="font-bold text-gray-900 whitespace-nowrap">{{ d.subtotal|rupiah }}</p>
+                    </div>
+                    {% endfor %}
+                    <div class="p-4 flex justify-between items-center bg-gray-50">
+                        <span class="font-semibold text-gray-700">Total</span>
+                        <span class="text-xl font-extrabold text-gray-900">{{ transaksi.total_harga|rupiah }}</span>
+                    </div>
+                    <div class="p-4 text-sm text-gray-600 space-y-1">
+                        <p>Metode: <strong>{{ transaksi.metode_bayar }}</strong> ({{ transaksi.tipe_pembayaran }})</p>
+                        <p>Pembayaran:
+                            <strong>{% if transaksi.metode_bayar == 'Tunai' and transaksi.status_pembayaran != 'Lunas' %}Bayar di outlet saat pengambilan{% else %}{{ transaksi.status_pembayaran }}{% endif %}</strong>
+                        </p>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Salin kode pesanan
+        document.getElementById('salin-kode').addEventListener('click', async (e) => {
+            const kode = document.getElementById('kode-pesanan').textContent.trim();
+            const tombol = e.currentTarget;
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(kode);
+                } else {
+                    const area = document.createElement('textarea');
+                    area.value = kode;
+                    document.body.appendChild(area);
+                    area.select();
+                    document.execCommand('copy');
+                    area.remove();
+                }
+                tombol.textContent = 'Tersalin!';
+            } catch (err) {
+                tombol.textContent = 'Salin manual';
+            }
+            setTimeout(() => { tombol.textContent = 'Salin Kode'; }, 2000);
+        });
+    </script>
+
+    {% if transaksi.status != 'Selesai' %}
+    <script>
+        // Perbarui otomatis jika status berubah (cek tiap 5 detik)
+        const statusAwal = "{{ transaksi.status }}|{{ transaksi.status_pembayaran }}";
+        setInterval(async () => {
+            try {
+                const res = await fetch("{{ url_for('status_pesanan_json', kode=transaksi.kode_pesanan) }}");
+                if (!res.ok) return;
+                const data = await res.json();
+                if (`${data.status}|${data.status_pembayaran}` !== statusAwal) location.reload();
+            } catch (e) { /* abaikan, coba lagi */ }
+        }, 5000);
+    </script>
+    {% endif %}
+</body>
+</html>

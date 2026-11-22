@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Pesanan {{ transaksi.kode_pesanan or transaksi.id }} - Jotoast</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
+</head>
+
+<body class="po-page">
+{% set lunas = transaksi.status_pembayaran == 'Lunas' %}
+{% set tunai_belum = transaksi.metode_bayar == 'Tunai' and not lunas and transaksi.status != 'Selesai' %}
+<div class="po-wrap">
+
+    <div class="po-header">
+        <div>
+            <h1>Detail Pesanan</h1>
+            <p>{{ transaksi.kode_pesanan or ('#' ~ transaksi.id) }} &middot; {{ transaksi.nama_pemesan or 'Pelanggan Online' }}</p>
+        </div>
+        <a href="{{ url_for('pesanan_online') }}" class="po-back">&larr; Daftar Pesanan</a>
+    </div>
+
+    {% include '_notifications.html' %}
+
+    <div class="po-grid">
+
+        <!-- Kiri: informasi pesanan -->
+        <section class="po-panel">
+            <dl class="po-info">
+                <dt>Nama pemesan</dt><dd>{{ transaksi.nama_pemesan or 'Pelanggan Online' }}</dd>
+                <dt>Kode pesanan</dt><dd>{{ transaksi.kode_pesanan or '-' }}</dd>
+                <dt>Waktu pesan</dt><dd>{{ transaksi.tanggal_waktu|waktu_pesanan }}</dd>
+                <dt>Metode pembayaran</dt><dd>{{ transaksi.metode_bayar }} ({{ transaksi.tipe_pembayaran or '-' }})</dd>
+                <dt>Status pembayaran</dt>
+                <dd><span class="po-badge pay-{{ transaksi.status_pembayaran|lower|replace(' ', '-') }}">{{ transaksi.status_pembayaran }}</span></dd>
+                {% if lunas and transaksi.uang_diterima is not none %}
+                <dt>Uang diterima</dt><dd>{{ transaksi.uang_diterima|rupiah }}</dd>
+                <dt>Kembalian</dt><dd>{{ (transaksi.kembalian or 0)|rupiah }}</dd>
+                {% endif %}
+                {% if transaksi.waktu_bayar %}
+                <dt>Waktu bayar</dt><dd>{{ transaksi.waktu_bayar|waktu_pesanan }}</dd>
+                {% endif %}
+            </dl>
+
+            <h2>Menu yang dipesan</h2>
+            <div class="po-table-wrap">
+                <table class="po-table">
+                    <thead>
+                        <tr><th>Menu</th><th>Varian</th><th class="r">Harga</th><th class="r">Jml</th><th class="r">Subtotal</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for item in detail %}
+                        <tr>
+                            <td>{{ item.nama_produk }}</td>
+                            <td>{{ item.varian or '-' }}</td>
+                            <td class="r">{{ item.harga|rupiah }}</td>
+                            <td class="r">{{ item.jumlah }}</td>
+                            <td class="r">{{ item.subtotal|rupiah }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5" class="po-meta">Rincian menu tidak ditemukan.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr><td colspan="4">Total</td><td class="r">{{ transaksi.total_harga|rupiah }}</td></tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            {% if transaksi.bukti_bayar %}
+            <h2>Bukti pembayaran</h2>
+            <a href="{{ url_for('static', filename=transaksi.bukti_bayar) }}" target="_blank" rel="noopener">
+                <img class="po-bukti" src="{{ url_for('static', filename=transaksi.bukti_bayar) }}" alt="Bukti pembayaran">
+            </a>
+            {% elif transaksi.metode_bayar == 'QRIS' and not lunas %}
+            <h2>Bukti pembayaran</h2>
+            <p class="po-meta">Pelanggan belum mengirim bukti pembayaran.</p>
+            {% endif %}
+        </section>
+
+        <!-- Kanan: status dan aksi -->
+        <aside class="po-panel">
+            <h2>Status pesanan</h2>
+            <ol class="po-steps">
+                {% for nama in langkah %}
+                <li class="{{ 'selesai' if loop.index0 < indeks_status or transaksi.status == 'Selesai' else ('aktif' if loop.index0 == indeks_status else '') }}">
+                    <span>{{ loop.index }}</span>{{ nama }}
+                </li>
+                {% endfor %}
+            </ol>
+
+            {# ---------- Ubah status ---------- #}
+            {% if transaksi.status == 'Menunggu Pembayaran' and transaksi.metode_bayar == 'QRIS' %}
+                <form method="POST" action="{{ url_for('ubah_status_pesanan', id=transaksi.id, aksi='bayar') }}">
+                    <input type="hidden" name="kembali" value="detail">
+                    {% if transaksi.bukti_bayar %}
+                    <p class="po-meta">Periksa bukti dan pastikan pembayaran QRIS masuk, lalu konfirmasi.</p>
+                    <button class="po-btn" type="submit">Konfirmasi Pembayaran QRIS</button>
+                    {% else %}
+                    <p class="po-meta">Konfirmasi tersedia setelah pelanggan mengirim bukti pembayaran.</p>
+                    <button class="po-btn" type="button" disabled>Konfirmasi Pembayaran QRIS</button>
+                    {% endif %}
+                </form>
+
+            {% elif transaksi.status == 'Diproses' %}
+                <form method="POST" action="{{ url_for('ubah_status_pesanan', id=transaksi.id, aksi='siap') }}">
+                    <input type="hidden" name="kembali" value="detail">
+                    <button class="po-btn" type="submit">Ubah ke Siap Diambil</button>
+                </form>
+
+            {% elif transaksi.status == 'Siap Diambil' %}
+                <form method="POST" action="{{ url_for('ubah_status_pesanan', id=transaksi.id, aksi='selesai') }}">
+                    <input type="hidden" name="kembali" value="detail">
+                    {% if lunas %}
+                    <button class="po-btn" type="submit">Ubah ke Selesai</button>
+                    {% else %}
+                    <button class="po-btn" type="button" disabled>Ubah ke Selesai</button>
+                    <p class="po-meta">Konfirmasi pembayaran tunai terlebih dahulu.</p>
+                    {% endif %}
+                </form>
+
+            {% elif transaksi.status == 'Selesai' %}
+                <p class="po-done">Pesanan sudah selesai.</p>
+            {% endif %}
+
+            {# ---------- Kontrol konfirmasi pembayaran tunai (Sprint 3) ---------- #}
+            {% if tunai_belum %}
+            <form class="po-tunai" id="form-tunai" method="POST"
+                  action="{{ url_for('ubah_status_pesanan', id=transaksi.id, aksi='konfirmasi_tunai') }}"
+                  data-total="{{ transaksi.total_harga }}">
+                <input type="hidden" name="kembali" value="detail">
+                <h2>Konfirmasi pembayaran tunai</h2>
+                <p class="po-meta">Total tagihan</p>
+                <p class="po-tagihan">{{ transaksi.total_harga|rupiah }}</p>
+
+                <label for="uang_diterima">Uang diterima (Rp)</label>
+                <div class="po-row">
+                    <input type="number" id="uang_diterima" name="uang_diterima"
+                           min="{{ transaksi.total_harga }}" step="1" inputmode="numeric"
+                           placeholder="Contoh: 50000" required>
+                    <button type="button" class="po-ghost" id="uang-pas">Uang pas</button>
+                </div>
+
+                <p class="po-kembalian">Kembalian: <strong id="kembalian">Rp0</strong></p>
+                <p class="po-meta" id="info-tunai">Masukkan nominal uang dari pelanggan.</p>
+
+                <button class="po-btn po-ok" type="submit" id="btn-konfirmasi" disabled>
+                    Konfirmasi Pembayaran Tunai
+                </button>
+            </form>
+            {% elif lunas and transaksi.metode_bayar == 'Tunai' %}
+            <p class="po-lunas">Pembayaran tunai sudah dikonfirmasi.</p>
+            {% endif %}
+        </aside>
+
+    </div>
+</div>
+
+<script>
+    const rupiah = n => 'Rp' + Math.max(0, n).toLocaleString('id-ID');
+    const form = document.getElementById('form-tunai');
+
+    if (form) {
+        const total = parseInt(form.dataset.total, 10);
+        const input = document.getElementById('uang_diterima');
+        const kembalian = document.getElementById('kembalian');
+        const info = document.getElementById('info-tunai');
+        const tombol = document.getElementById('btn-konfirmasi');
+
+        const hitung = () => {
+            const uang = parseInt(input.value, 10);
+            if (isNaN(uang)) {
+                kembalian.textContent = 'Rp0';
+                info.textContent = 'Masukkan nominal uang dari pelanggan.';
+                tombol.disabled = true;
+            } else if (uang < total) {
+                kembalian.textContent = 'Rp0';
+                info.textContent = 'Uang kurang ' + rupiah(total - uang) + '.';
+                tombol.disabled = true;
+            } else {
+                kembalian.textContent = rupiah(uang - total);
+                info.textContent = 'Nominal cukup.';
+                tombol.disabled = false;
+            }
+        };
+
+        input.addEventListener('input', hitung);
+        document.getElementById('uang-pas').addEventListener('click', () => {
+            input.value = total;
+            hitung();
+        });
+    }
+
+    // Muat ulang tiap 10 detik (mis. menunggu bukti QRIS masuk),
+    // kecuali kasir sedang mengisi nominal.
+    setInterval(() => {
+        const el = document.activeElement;
+        const mengisi = [...document.querySelectorAll('input')].some(i => i.value !== '');
+        if (!(el && el.tagName === 'INPUT') && !mengisi) location.reload();
+    }, 10000);
+</script>
+</body>
+</html>

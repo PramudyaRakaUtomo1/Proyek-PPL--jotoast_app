@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jotoast - Pesan Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
+</head>
+<body class="menu-page flex flex-col min-h-screen">
+    {% include '_notifications.html' %}
+
+    <!-- Header -->
+    <header class="menu-header flex justify-between items-center w-full">
+        <div>
+            <h1 class="text-[#f5b841] text-3xl font-bold tracking-tight">Jotoast</h1>
+            <p class="text-gray-300 text-sm mt-1">Pesan ricebowl, tost, dan kopi</p>
+        </div>
+        <nav class="flex items-center gap-3">
+            <a href="{{ url_for('cek_status') }}" class="menu-login-link">Cek Pesanan</a>
+            <a href="{{ url_for('login') }}" class="menu-login-link">Login Pegawai</a>
+        </nav>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-5 sm:px-8 lg:px-10 pb-12">
+
+        {% if kode_terakhir %}
+        <a href="{{ url_for('status_pesanan', kode=kode_terakhir) }}"
+           class="mt-6 flex items-center justify-between gap-3 rounded-xl bg-[#fff6dd] border border-[#f3d28a] px-5 py-3 text-sm font-semibold text-[#6b4a0d] hover:bg-[#ffefc2]">
+            <span>Kamu punya pesanan terakhir: {{ kode_terakhir }}</span>
+            <span>Lihat status &rarr;</span>
+        </a>
+        {% endif %}
+
+        <!-- Hero -->
+        <section class="menu-hero">
+            <div class="menu-hero-copy">
+                <span class="menu-eyebrow">Pesan Online</span>
+                <h2>Lapar? <span>Pesan dulu,</span> ambil di outlet.</h2>
+                <p>Pilih menu favoritmu, bayar tunai atau QRIS, lalu ambil pesanan tanpa antre lama.</p>
+                <a href="{{ url_for('menu_online') }}" class="menu-hero-link">Pesan Sekarang &rarr;</a>
+            </div>
+            <div class="menu-hero-mark" aria-hidden="true">&#127838;</div>
+        </section>
+
+        <!-- Menu pilihan -->
+        {% if produk_unggulan %}
+        <div class="menu-section-heading">
+            <div>
+                <h2>Menu Pilihan</h2>
+                <p>Beberapa menu yang sedang ready hari ini.</p>
+            </div>
+            <a href="{{ url_for('menu_online') }}" class="font-bold text-[#b57a14] hover:underline">Lihat semua &rarr;</a>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {% for item in produk_unggulan %}
+            {% set src = item.gambar|gambar_produk(item.nama) %}
+            <article class="menu-card bg-white p-5 rounded-2xl">
+                <div class="menu-image w-full rounded-xl mb-4 overflow-hidden">
+                    {% if src %}<img src="{{ src }}" alt="{{ item.nama }}" class="w-full h-full object-cover">
+                    {% else %}<div class="w-full h-full bg-[#efede8]"></div>{% endif %}
+                </div>
+                <h3 class="font-bold text-gray-900 text-lg">{{ item.nama }}</h3>
+                <p class="menu-price mt-2">{{ item.harga|rupiah }}</p>
+            </article>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Cara pesan -->
+        <div class="menu-section-heading">
+            <div><h2>Cara Memesan</h2><p>Tidak perlu membuat akun atau login.</p></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+            {% for no, judul, ket in [
+                (1, 'Pilih menu', 'Tentukan menu, varian, dan jumlahnya.'),
+                (2, 'Checkout', 'Isi nama pemesan dan pilih tunai atau QRIS.'),
+                (3, 'Pantau status', 'Cek dengan kode pesanan yang kamu terima.'),
+                (4, 'Ambil di outlet', 'Sebutkan namamu saat pesanan siap diambil.')] %}
+            <div class="bg-white rounded-2xl p-5 border border-[#eee8dd]">
+                <span class="inline-grid place-items-center w-9 h-9 rounded-full bg-[#f5b841] font-extrabold">{{ no }}</span>
+                <h3 class="font-bold mt-3">{{ judul }}</h3>
+                <p class="text-sm text-gray-500 mt-1">{{ ket }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+</body>
+</html>

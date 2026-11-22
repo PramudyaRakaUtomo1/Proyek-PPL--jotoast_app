@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Produk - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
@@ -15,7 +16,7 @@
             <a href="{{ url_for('kelola_produk') }}" class="admin-brand">Jotoast</a>
             <p class="admin-nav-label">Manajemen</p>
             <nav class="admin-nav" aria-label="Navigasi admin">
-                <a href="{{ url_for('kelola_produk') }}" class="admin-nav-link is-active">
+                <a href="{{ url_for('kelola_produk') }}" class="admin-nav-link is-active" aria-current="page">
                     <span aria-hidden="true">▦</span> Produk
                 </a>
                 <a href="{{ url_for('kelola_kategori') }}" class="admin-nav-link">
@@ -23,6 +24,15 @@
                 </a>
                 <a href="{{ url_for('riwayat_transaksi') }}" class="admin-nav-link">
                     <span aria-hidden="true">▤</span> Transaksi
+                </a>
+                <a href="{{ url_for('admin_diagram') }}" class="admin-nav-link">
+                    <span aria-hidden="true">▥</span> Diagram
+                </a>
+                <a href="{{ url_for('admin_pendapatan') }}" class="admin-nav-link">
+                    <span aria-hidden="true">Rp</span> Pendapatan &amp; Laba
+                </a>
+                <a href="{{ url_for('admin_laporan_penjualan') }}" class="admin-nav-link">
+                    <span aria-hidden="true">▧</span> Laporan Penjualan
                 </a>
             </nav>
             <div class="admin-sidebar-footer">
@@ -39,9 +49,6 @@
                         <p class="admin-eyebrow">Menu & inventori</p>
                         <h1 class="admin-title">Kelola Produk</h1>
                     </div>
-                    <a href="{{ url_for('tambah_produk') }}" class="admin-add-button">
-                        <span aria-hidden="true">+</span> Tambah Produk
-                    </a>
                 </div>
 
                 <div class="admin-category-filters" aria-label="Filter kategori produk">
@@ -55,13 +62,14 @@
 
                 <section class="admin-panel admin-table-panel">
                     <div class="admin-table-scroll">
-                        <table class="admin-product-table w-full text-left border-collapse">
+                        <table class="admin-product-table admin-products-table w-full text-left border-collapse">
                             <thead>
                                 <tr>
                                     <th>Foto</th>
                                     <th>Nama</th>
                                     <th>Kategori</th>
                                     <th>Harga</th>
+                                    <th>Modal</th>
                                     <th>Status</th>
                                     <th class="text-right">Aksi</th>
                                 </tr>
@@ -81,6 +89,13 @@
                                     <td><span class="admin-product-name">{{ item.nama }}</span></td>
                                     <td><span class="admin-product-category">{{ item.kategori_rel.nama }}</span></td>
                                     <td class="admin-product-price">{{ item.harga|rupiah }}</td>
+                                    <td class="admin-product-price">
+                                        {% if item.harga_modal is not none %}
+                                        {{ item.harga_modal|rupiah }}
+                                        {% else %}
+                                        <span class="admin-muted">Belum diisi</span>
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         {% if item.status_ready %}
                                         <span class="admin-status is-ready">Ready</span>
@@ -91,20 +106,30 @@
                                     <td>
                                         <div class="admin-actions">
                                             <a href="{{ url_for('edit_produk', id=item.id) }}" class="admin-action-edit">Ubah</a>
-                                            <a href="{{ url_for('hapus_produk', id=item.id) }}" onclick="return confirm('Yakin hapus produk ini?')" class="admin-action-delete">Hapus</a>
+                                            <a href="{{ url_for('hapus_produk', id=item.id) }}"
+                                               data-confirm="Produk yang dihapus tidak dapat dipulihkan."
+                                               data-confirm-title="Hapus produk?"
+                                               data-confirm-accept="Ya, hapus"
+                                               data-confirm-tone="danger"
+                                               class="admin-action-delete">Hapus</a>
                                         </div>
                                     </td>
                                 </tr>
                                 {% else %}
                                 <tr>
-                                    <td colspan="6" class="admin-empty-row">Belum ada produk pada kategori ini.</td>
+                                    <td colspan="7" class="admin-empty-row">Belum ada produk pada kategori ini.</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </section>
-                <a href="/" class="admin-back-link"><span aria-hidden="true">←</span> Kembali ke toko</a>
+                <div class="admin-products-actions">
+                    <a href="/" class="admin-back-link"><span aria-hidden="true">←</span> Kembali ke Beranda</a>
+                    <a href="{{ url_for('tambah_produk') }}" class="admin-add-button">
+                        <span aria-hidden="true">+</span> Tambah Produk
+                    </a>
+                </div>
             </div>
         </main>
     </div>

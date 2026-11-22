@@ -1,0 +1,31 @@
+<div class="notification-seed" hidden>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div data-notification-type="{% if category in ['error', 'admin_error', 'kasir_error'] %}error{% elif category in ['sukses', 'admin_success', 'kasir_success'] %}success{% else %}info{% endif %}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+    {% if error is defined and error %}
+    <div data-notification-type="error">{{ error }}</div>
+    {% endif %}
+</div>
+
+<div class="notification-stack" id="notification-stack"
+     aria-live="polite" aria-relevant="additions"></div>
+
+<div class="app-dialog-backdrop" id="app-confirm-dialog" hidden>
+    <section class="app-dialog" role="alertdialog" aria-modal="true"
+             aria-labelledby="app-dialog-title"
+             aria-describedby="app-dialog-message">
+        <div class="app-dialog-icon" aria-hidden="true">?</div>
+        <h2 id="app-dialog-title">Konfirmasi</h2>
+        <p id="app-dialog-message"></p>
+        <div class="app-dialog-actions">
+            <button type="button" class="app-dialog-button app-dialog-cancel"
+                    id="app-dialog-cancel">Batal</button>
+            <button type="button" class="app-dialog-button app-dialog-accept"
+                    id="app-dialog-accept">Lanjutkan</button>
+        </div>
+    </section>
+</div>
+
+<script src="{{ url_for('static', filename='notifications.js') }}" defer></script>

@@ -3,252 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="10">
     <title>Pesanan Online - Jotoast</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            margin: 0;
-            padding: 25px;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: auto;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-
-        h1 {
-            margin: 0;
-        }
-
-        .back {
-            background: #555;
-            color: white;
-            padding: 10px 16px;
-            text-decoration: none;
-            border-radius: 6px;
-        }
-
-        .pesanan {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 18px;
-            box-shadow: 0 2px 7px #ddd;
-        }
-
-        .pesanan-header {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 12px;
-        }
-
-        .status {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-
-        .menunggu {
-            background: #fff0c2;
-            color: #8a5a00;
-        }
-
-        .diproses {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-
-        .selesai {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .item {
-            display: flex;
-            justify-content: space-between;
-            padding: 9px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 15px;
-        }
-
-        .aksi {
-            margin-top: 18px;
-        }
-
-        button {
-            border: none;
-            padding: 11px 18px;
-            border-radius: 6px;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .terima {
-            background: #2563eb;
-        }
-
-        .selesaikan {
-            background: #16a34a;
-        }
-
-        .pesan {
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            background: #e0f2fe;
-        }
-
-        .kosong {
-            background: white;
-            padding: 35px;
-            text-align: center;
-            border-radius: 10px;
-        }
-    </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
 </head>
 
-<body class="orders-page">
-<div class="container">
+<body class="po-page">
+<div class="po-wrap">
 
-    <div class="header">
+    <div class="po-header">
         <div>
-            <h1 class="orders-title">Pesanan Online</h1>
-            <p>Daftar pesanan pelanggan dari website Jotoast</p>
+            <h1>Pesanan Online</h1>
+            <p>Daftar pesanan pelanggan yang masuk dari website Jotoast</p>
         </div>
-
-        <a href="{{ url_for('kasir') }}" class="back">
-            Kembali ke Kasir
-        </a>
+        <a href="{{ url_for('kasir') }}" class="po-back">Kembali ke Kasir</a>
     </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            {% if category in ['kasir_success', 'kasir_error'] %}
-            <div class="pesan">{{ message }}</div>
-            {% endif %}
+    {% include '_notifications.html' %}
+
+    <div class="po-tabs">
+        <a class="po-tab {{ 'aktif' if not filter_status }}"
+           href="{{ url_for('pesanan_online', q=kata_kunci or None) }}">
+            Semua <span>{{ jumlah_semua }}</span>
+        </a>
+        {% for status in daftar_status %}
+        <a class="po-tab {{ 'aktif' if filter_status == status }}"
+           href="{{ url_for('pesanan_online', status=status, q=kata_kunci or None) }}">
+            {{ status }} <span>{{ jumlah_status[status] }}</span>
+        </a>
         {% endfor %}
-    {% endwith %}
+    </div>
+
+    <form class="po-search" method="GET" action="{{ url_for('pesanan_online') }}">
+        {% if filter_status %}<input type="hidden" name="status" value="{{ filter_status }}">{% endif %}
+        <input type="search" name="q" value="{{ kata_kunci }}" maxlength="100"
+               placeholder="Cari nama pemesan atau kode pesanan">
+        <button type="submit">Cari</button>
+        {% if kata_kunci %}
+        <a class="po-reset" href="{{ url_for('pesanan_online', status=filter_status or None) }}">Hapus pencarian</a>
+        {% endif %}
+    </form>
 
     {% if daftar_pesanan %}
-
+    <div class="po-list">
         {% for data in daftar_pesanan %}
-            {% set trx = data.transaksi %}
+        {% set trx = data.transaksi %}
+        <article class="po-card">
 
-            <div class="pesanan orders-card">
+            <div class="po-main">
+                <p class="po-kode">{{ trx.kode_pesanan or ('#' ~ trx.id) }}</p>
+                <h3>{{ trx.nama_pemesan or 'Pelanggan Online' }}</h3>
+                <p class="po-meta">{{ trx.tanggal_waktu|waktu_pesanan }} &middot; {{ data.jumlah_item }} item</p>
+            </div>
 
-                <div class="pesanan-header">
-                    <div>
-                        <h3>Pesanan #{{ trx.id }}</h3>
-                        <p>
-                            Pelanggan:
-                            {{ trx.nama_pemesan or 'Pelanggan Online' }}
-                        </p>
-                        <p>Metode pembayaran: {{ trx.metode_bayar }}</p>
-                    </div>
-
-                    <div>
-                        <span class="status {{ trx.status|lower }}">
-                            {{ trx.status }}
-                        </span>
-                    </div>
+            <div class="po-pay">
+                <div class="po-method">
+                    <span class="po-meta">Metode pembayaran</span>
+                    <strong>{{ trx.metode_bayar }}</strong>
                 </div>
-
-                <h4>Daftar makanan:</h4>
-
-                {% for item in data.detail %}
-                    <div class="item">
-                        <span>
-                            {{ item.nama_produk }}
-                            × {{ item.jumlah }}
-                        </span>
-
-                        <span>
-                            Rp{{ "{:,.0f}".format(item.subtotal) }}
-                        </span>
+                <div class="po-status-grid">
+                    <div class="po-status-group">
+                        <span class="po-status-label">Status pembayaran</span>
+                        <span class="po-badge pay-{{ trx.status_pembayaran|lower|replace(' ', '-') }}">{{ trx.status_pembayaran }}</span>
                     </div>
-                {% endfor %}
-
-                <div class="total">
-                    <span>Total</span>
-                    <span>
-                        Rp{{ "{:,.0f}".format(trx.total_harga) }}
-                    </span>
-                </div>
-
-                <div class="aksi">
-
-                    {% if trx.status == 'Menunggu' %}
-                        <form method="POST"
-                              action="{{ url_for(
-                                  'ubah_status_pesanan',
-                                  id=trx.id,
-                                  aksi='terima'
-                              ) }}">
-                            <button class="terima" type="submit">
-                                Terima Pesanan
-                            </button>
-                        </form>
-
-                    {% elif trx.status == 'Diproses' %}
-                        <form method="POST"
-                              action="{{ url_for(
-                                  'ubah_status_pesanan',
-                                  id=trx.id,
-                                  aksi='selesai'
-                              ) }}">
-                            <button class="selesaikan" type="submit">
-                                Selesaikan Pesanan
-                            </button>
-                        </form>
-
-                    {% else %}
-                        <strong>Pesanan sudah selesai.</strong>
-                    {% endif %}
-
+                    <div class="po-status-group">
+                        <span class="po-status-label">Status pesanan</span>
+                        <span class="po-badge s-{{ trx.status|lower|replace(' ', '-') }}">{{ trx.status }}</span>
+                    </div>
                 </div>
             </div>
 
+            <div class="po-side">
+                <strong class="po-total">{{ trx.total_harga|rupiah }}</strong>
+                <a class="po-detail" href="{{ url_for('detail_pesanan', id=trx.id) }}">Lihat Detail</a>
+            </div>
+
+        </article>
         {% endfor %}
-
+    </div>
     {% else %}
-
-        <div class="kosong">
+    <div class="po-empty">
+        {% if kata_kunci or filter_status %}
+            <h3>Tidak ada pesanan yang cocok</h3>
+            <p>Coba ganti filter status atau kata pencarian.</p>
+        {% else %}
             <h3>Belum ada pesanan online</h3>
             <p>Pesanan pelanggan akan muncul di halaman ini setelah checkout.</p>
-        </div>
-
+        {% endif %}
+    </div>
     {% endif %}
 
 </div>
+
+<script>
+    // Muat ulang tiap 10 detik agar pesanan baru muncul,
+    // kecuali kasir sedang mengetik di kolom pencarian.
+    setInterval(() => {
+        const el = document.activeElement;
+        if (!(el && el.tagName === 'INPUT')) location.reload();
+    }, 10000);
+</script>
 </body>
 </html>

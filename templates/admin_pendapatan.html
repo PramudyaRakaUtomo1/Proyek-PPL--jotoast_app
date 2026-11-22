@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendapatan &amp; Laba - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
+</head>
+<body class="admin-page font-sans min-h-screen">
+    {% include '_admin_toasts.html' %}
+
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <a href="{{ url_for('kelola_produk') }}" class="admin-brand">Jotoast</a>
+            <p class="admin-nav-label">Manajemen</p>
+            <nav class="admin-nav" aria-label="Navigasi admin">
+                <a href="{{ url_for('kelola_produk') }}" class="admin-nav-link"><span aria-hidden="true">▦</span> Produk</a>
+                <a href="{{ url_for('kelola_kategori') }}" class="admin-nav-link"><span aria-hidden="true">◫</span> Kategori</a>
+                <a href="{{ url_for('riwayat_transaksi') }}" class="admin-nav-link"><span aria-hidden="true">▤</span> Transaksi</a>
+                <a href="{{ url_for('admin_diagram') }}" class="admin-nav-link"><span aria-hidden="true">▥</span> Diagram</a>
+                <a href="{{ url_for('admin_pendapatan') }}" class="admin-nav-link is-active" aria-current="page"><span aria-hidden="true">Rp</span> Pendapatan &amp; Laba</a>
+                <a href="{{ url_for('admin_laporan_penjualan') }}" class="admin-nav-link"><span aria-hidden="true">▧</span> Laporan Penjualan</a>
+            </nav>
+            <div class="admin-sidebar-footer">
+                <span class="admin-avatar" aria-hidden="true">J</span>
+                <span class="admin-account-label">Admin Jotoast</span>
+                <a href="{{ url_for('logout') }}" class="admin-logout" aria-label="Keluar" title="Keluar">↗</a>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-content p-5 sm:p-8 lg:p-10">
+                <div class="admin-heading">
+                    <div>
+                        <p class="admin-eyebrow">Ringkasan keuangan</p>
+                        <h1 class="admin-title">Pendapatan &amp; Laba</h1>
+                    </div>
+                </div>
+
+                <form class="admin-report-filter" method="GET">
+                    <label for="bulan">Periode laporan</label>
+                    <input id="bulan" name="bulan" type="month" value="{{ bulan }}">
+                    <button class="admin-add-button {% if periode == 'keseluruhan' %}admin-add-secondary{% endif %}"
+                            type="submit" name="mode" value="bulan">Tampilkan Bulan</button>
+                    <button class="admin-add-button {% if periode == 'bulan' %}admin-add-secondary{% endif %}"
+                            type="submit" name="mode" value="keseluruhan">Keseluruhan</button>
+                </form>
+
+                <h2 class="admin-report-period">{{ nama_bulan }}</h2>
+                <div class="admin-report-summary">
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Pendapatan transaksi lunas</span>
+                        <strong>{{ laporan.pendapatan|rupiah }}</strong>
+                    </div>
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Modal terdata (HPP)</span>
+                        <strong>{{ laporan.hpp_diketahui|rupiah }}</strong>
+                    </div>
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Laba tercatat*</span>
+                        <strong>{{ laporan.laba_tercatat|rupiah }}</strong>
+                    </div>
+                    <div class="admin-panel transaction-summary-card">
+                        <span>Transaksi lunas</span>
+                        <strong>{{ laporan.jumlah_transaksi }}</strong>
+                    </div>
+                </div>
+
+                <section class="admin-panel admin-report-note">
+                    <h2>Kelengkapan harga modal</h2>
+                    {% if not laporan.jumlah_transaksi %}
+                    <p>Belum ada transaksi lunas pada periode ini.</p>
+                    {% else %}
+                    <p>
+                        Laba tercatat hanya menghitung item dengan harga modal yang diketahui:
+                        {{ laporan.jumlah_item_modal_diketahui }} dari {{ laporan.jumlah_item }} unit.
+                        Harga modal dihitung sama untuk seluruh varian produk.
+                    </p>
+                    {% if laporan.transaksi_tidak_lengkap %}
+                    <p class="admin-report-warning">
+                        {{ laporan.transaksi_tidak_lengkap }} transaksi lunas memiliki harga modal yang belum lengkap atau rincian produk yang tidak tersedia. Nilai laba di atas belum mencakup bagian tersebut.
+                    </p>
+                    {% else %}
+                    <p class="admin-report-complete">Harga modal seluruh rincian transaksi pada periode ini sudah tercatat.</p>
+                    {% endif %}
+                    {% endif %}
+                    <a href="{{ url_for('kelola_produk') }}">Lengkapi harga modal di halaman Produk</a>
+                </section>
+                <p class="admin-report-footnote">*Laba tercatat = pendapatan item bermodal diketahui dikurangi harga modalnya. Belum memperhitungkan biaya operasional, pajak, atau diskon di luar harga item.</p>
+                <a href="{{ url_for('home') }}" class="admin-back-link">
+                    <span aria-hidden="true">←</span> Kembali ke Beranda
+                </a>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

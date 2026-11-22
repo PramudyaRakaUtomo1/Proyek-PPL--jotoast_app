@@ -2,74 +2,78 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tambah Produk - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='jotoast.css') }}">
 </head>
-<body class="form-page font-sans flex items-center justify-center">
+<body class="form-page font-sans">
 
     {% include '_admin_toasts.html' %}
 
-    <div class="form-card bg-white p-8 rounded-2xl w-full max-w-lg">
-        <h2 class="text-3xl font-extrabold text-gray-900 mb-6">Tambah Produk</h2>
-        
-        <form action="/admin/produk/tambah" method="POST" enctype="multipart/form-data" class="space-y-5">
-            <div>
-                <label class="block text-gray-800 font-semibold mb-2">Nama Produk</label>
-                <input type="text" name="nama" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841] focus:ring-1 focus:ring-[#f5b841]">
-            </div>
-            
-            <div>
-                <label class="block text-gray-800 font-semibold mb-2">Harga (Rp)</label>
-                <input type="number" name="harga" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841] focus:ring-1 focus:ring-[#f5b841]">
-            </div>
+    <div class="mx-auto w-full max-w-4xl">
+        <div class="form-card bg-white p-6 sm:p-10 rounded-2xl w-full">
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-6">Tambah Produk</h2>
 
-            <div>
-                <label class="block text-gray-800 font-semibold mb-2">Foto Produk</label>
-                <input
-                    type="file"
-                    name="gambar"
-                    accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841] focus:ring-1 focus:ring-[#f5b841]"
-                >
-                <p class="mt-1 text-sm text-gray-500">Pilih file JPG, PNG, GIF, atau WEBP (maks. 5 MB).</p>
-            </div>
-            
-            <div>
-                <label class="block text-gray-800 font-semibold mb-2">Kategori</label>
-                <select name="kategori_id" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841]">
-                    {% for kat in kategori %}
-                    <option value="{{ kat.id }}">{{ kat.nama }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+            <form action="/admin/produk/tambah" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-gray-800 font-semibold mb-2">Nama Produk</label>
+                    <input type="text" name="nama" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841] focus:ring-1 focus:ring-[#f5b841]">
+                </div>
 
-            <div>
-                <label class="block text-gray-800 font-semibold mb-2">
-                    Jumlah Stok Produk
-                </label>
+                <div>
+                    <label class="block text-gray-800 font-semibold mb-2">Harga (Rp)</label>
+                    <input type="number" name="harga" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841] focus:ring-1 focus:ring-[#f5b841]">
+                </div>
 
-                <input
-                    type="number"
-                    name="stok"
-                    min="0"
-                    value="0"
-                    required
-                    placeholder="Masukkan jumlah stok"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841]"
-                >
+                <div>
+                    <label class="block text-gray-800 font-semibold mb-2">Harga Modal per Produk (Rp)</label>
+                    <input type="number" name="harga_modal" min="0" step="1" class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841] focus:ring-1 focus:ring-[#f5b841]">
+                    <p class="mt-1 text-sm text-gray-500">Opsional. Jika belum diketahui, laba transaksi terkait akan ditandai belum lengkap. Berlaku untuk semua varian.</p>
+                </div>
 
-                <p class="text-sm text-gray-500 mt-1">
-                    Masukkan jumlah produk yang tersedia.
-                    Jika stok 0, produk otomatis Habis.
-                </p>
-            </div>
+                <div>
+                    <label class="block text-gray-800 font-semibold mb-2">Kategori</label>
+                    <select name="kategori_id" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841]">
+                        {% for kat in kategori %}
+                        <option value="{{ kat.id }}">{{ kat.nama }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <div class="flex gap-3 mt-8">
-                <a href="/admin/produk" class="flex-1 py-3 text-center rounded-lg bg-gray-200 text-gray-700 font-bold hover:bg-gray-300">Batal</a>
-                <button type="submit" class="flex-1 py-3 rounded-lg bg-[#1a1714] text-white font-bold hover:bg-black">Simpan Produk</button>
-            </div>
-        </form>
+                <div>
+                    <label class="block text-gray-800 font-semibold mb-2">Jumlah Stok Produk</label>
+                    <input
+                        type="number"
+                        name="stok"
+                        min="0"
+                        value="0"
+                        required
+                        placeholder="Masukkan jumlah stok"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841]"
+                    >
+                    <p class="text-sm text-gray-500 mt-1">
+                        Masukkan jumlah produk yang tersedia. Jika stok 0, produk otomatis Habis.
+                    </p>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-gray-800 font-semibold mb-2">Foto Produk</label>
+                    <input
+                        type="file"
+                        name="gambar"
+                        accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/png,image/gif,image/webp"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#f5b841] focus:ring-1 focus:ring-[#f5b841]"
+                    >
+                    <p class="mt-1 text-sm text-gray-500">Pilih file JPG, PNG, GIF, atau WEBP (maks. 5 MB).</p>
+                </div>
+
+                <div class="md:col-span-2 flex flex-col-reverse sm:flex-row gap-3 mt-4">
+                    <a href="/admin/produk" class="flex-1 py-3 text-center rounded-lg bg-gray-200 text-gray-700 font-bold hover:bg-gray-300">Batal</a>
+                    <button type="submit" class="flex-1 py-3 rounded-lg bg-[#1a1714] text-white font-bold hover:bg-black">Simpan Produk</button>
+                </div>
+            </form>
+        </div>
     </div>
 
 </body>
